@@ -450,6 +450,8 @@ BOOL CCitiesTable::Insert(const CITIES& recCity)
 	{
 		TRACE(_T(ERROR_MOVE_LAST_MESSAGE), hResult);
 
+		this->m_oSession.Abort();
+		
 		this->CloseAll(&this->m_oDataSource, &this->m_oSession, this);
 
 		return FALSE;
@@ -521,6 +523,19 @@ BOOL CCitiesTable::DeleteWhereID(const long lID)
 		}
 	}
 
+	// Започваме транзакция
+	hResult = this->m_oSession.StartTransaction();
+	if (FAILED(hResult))
+	{
+		TRACE(_T(ERROR_STARTING_TRANSACTION_MESSAGE), hResult);
+
+		this->m_oSession.Abort();
+
+		this->CloseAll(&this->m_oDataSource, &this->m_oSession);
+
+		return FALSE;
+	}
+	
 	// Настройка на типа на Rowset-а
 	CDBPropSet oUpdateDBPropSet(DBPROPSET_ROWSET);
 	this->SetUpRowset(oUpdateDBPropSet);
@@ -534,7 +549,9 @@ BOOL CCitiesTable::DeleteWhereID(const long lID)
 	if (FAILED(hResult))
 	{
 		TRACE(_T(ERROR_COMMAND_OPEN_MESSAGE), hResult, strQuery.GetString());
-		
+
+		this->m_oSession.Abort();
+
 		this->CloseAll(&this->m_oDataSource, &this->m_oSession);
 		
 		return FALSE;
@@ -545,6 +562,8 @@ BOOL CCitiesTable::DeleteWhereID(const long lID)
 	if (FAILED(hResult))
 	{
 		TRACE(_T(ERROR_MOVE_FIRST_MESSAGE), hResult);
+
+		this->m_oSession.Abort();
 		
 		this->CloseAll(&this->m_oDataSource, &this->m_oSession, this);
 		
@@ -555,6 +574,8 @@ BOOL CCitiesTable::DeleteWhereID(const long lID)
 	if (hResult == DB_S_ENDOFROWSET)
 	{
 		TRACE(_T(ERROR_NO_RECORD_WITH_ID_MESSAGE), lID, hResult);
+
+		this->m_oSession.Abort();
 
 		this->CloseAll(&this->m_oDataSource, &this->m_oSession, this);
 
@@ -567,8 +588,23 @@ BOOL CCitiesTable::DeleteWhereID(const long lID)
 	{
 		TRACE(_T(ERROR_DELETE_MESSAGE), lID, hResult);
 
+		this->m_oSession.Abort();
+
 		this->CloseAll(&this->m_oDataSource, &this->m_oSession,this);
 		
+		return FALSE;
+	}
+
+	// Приключване на транзакция
+	hResult = this->m_oSession.Commit();
+	if (FAILED(hResult))
+	{
+		TRACE(_T(ERROR_COMMIT_MESSAGE), hResult);
+
+		this->m_oSession.Abort();
+
+		this->CloseAll(&this->m_oDataSource, &this->m_oSession, this);
+
 		return FALSE;
 	}
 
