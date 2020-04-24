@@ -16,6 +16,22 @@
 #define ERROR_END_OF_ROWSET_NOT_REACHED_MESSAGE "Failed - END OF ROWSET not reached. Error: %d.\n"
 #define ERROR_NO_RECORD_WITH_ID_MESSAGE "Error - no record with id: %d. HRESULT: %d.\n"
 
+
+/////////////////////////////////////////////////////////////////////////////
+// CCitiesTableAccessor
+
+// Constructor / Destructor
+// ----------------
+
+CCitiesTableAccessor::CCitiesTableAccessor()
+{
+}
+
+CCitiesTableAccessor::~CCitiesTableAccessor()
+{
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CCitiesTable
 
@@ -396,7 +412,7 @@ BOOL CCitiesTable::Insert(const CITIES& recCity)
 	}
 
 	// Започваме транзакция
-	hResult = this->m_oSession.StartTransaction(ISOLATIONLEVEL_READCOMMITTED);
+	hResult = this->m_oSession.StartTransaction();
 	if (FAILED(hResult))
 	{
 		TRACE(_T(ERROR_STARTING_TRANSACTION_MESSAGE), hResult);

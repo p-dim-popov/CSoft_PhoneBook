@@ -13,8 +13,8 @@ class CCitiesTableAccessor
 // Constructor / Destructor
 // ----------------
 public:
-	CCitiesTableAccessor() = default;
-	~CCitiesTableAccessor() = default;
+	CCitiesTableAccessor();
+	~CCitiesTableAccessor();
 
 // Constants
 // ----------------
