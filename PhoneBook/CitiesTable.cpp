@@ -429,7 +429,7 @@ BOOL CCitiesTable::Insert(const CITIES& recCity)
 	this->SetUpRowset(oUpdateDBPropSet);
 
 	// Конструиране на заявката
-	const CString strQuery = _T("SELECT TOP 1 * FROM CITIES");
+	const CString strQuery = _T("SELECT TOP 0 * FROM CITIES");
 
 	// Изпълняване на заявката
 	hResult = this->Open(this->m_oSession, strQuery, &oUpdateDBPropSet);

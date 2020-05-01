@@ -91,7 +91,7 @@ struct PHONE_TYPES
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CCitiesTable
+// CAutoDeleteTypedPtrArray
 
 /// <summary>Клас, наследяващ CTypedPtrArray и имплементиращ Garbage Collector чрез метод DeleteAll</summary>
 template<typename T>
@@ -123,7 +123,46 @@ public:
 	}
 };
 
+
+/////////////////////////////////////////////////////////////////////////////
+// CAutoDeleteMap
+
+/// <summary>Клас, наследяващ CMap и имплементиращ Garbage Collector чрез метод DeleteAll</summary>
+template<typename KEY, typename VALUE>
+class CAutoDeleteMap : public CMap<KEY, KEY, VALUE, VALUE>
+{
+
+	// Constructor / Destructor
+	// ----------------
+public:
+	CAutoDeleteMap() {}
+	~CAutoDeleteMap()
+	{
+		this->DeleteAll();
+	}
+
+	// Methods
+	// ----------------
+public:
+	/// <summary>Освобождава динамичната памет и премахва всички елементи от масива</summary>
+	/// <returns>void</returns>
+	void DeleteAll()
+	{
+		typename CAutoDeleteMap<KEY, VALUE>::CPair* pCurrentCity = this->PGetFirstAssoc();
+		for (INT_PTR i = 0; i < this->GetCount(); i++)
+		{
+			delete pCurrentCity->value;
+			pCurrentCity = this->PGetNextAssoc(pCurrentCity);
+		}
+
+		this->RemoveAll();
+	}
+};
+
+
 typedef CAutoDeleteTypedPtrArray<CITIES*> CCitiesArray;
 typedef CAutoDeleteTypedPtrArray<PERSONS*> CPersonsArray;
 typedef CAutoDeleteTypedPtrArray<PHONE_NUMBERS*> CPhoneNumbersArray;
 typedef CAutoDeleteTypedPtrArray<PHONE_TYPES*> CPhoneTypesArray;
+
+typedef CAutoDeleteMap<long, CITIES*> CCitiesMapById;

@@ -5,6 +5,7 @@
 
 #define PRINT_CITY_TEMPLATE "|| CityName: %s; CityRegion: %s; CityID:%d; CityUpdateCounter: %d\n"
 #define DO_NOT_PRINT false
+#define DO_NOT_RUN false
 
 /// <summary>Примери със SelectAll</summary>
 INT_PTR SelectAllExample(bool bShouldBePrinted = true)
@@ -305,8 +306,13 @@ void CRUDExample()
 }
 
 /// <summary>Стартиране на всички примери</summary>
-void StartExamples()
+void StartExamples(bool bShouldItRun = true) //TODO: to run remove DO_NOT_RUN in usage
 {
+	if (!bShouldItRun)
+	{
+		return;
+	}
+	
 	TestAll(); // Задачите от Task 2
 	TRACE(_T("SelectAllExample\n"));
 	SelectAllExample();
