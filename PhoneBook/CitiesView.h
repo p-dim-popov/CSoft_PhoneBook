@@ -25,7 +25,6 @@ protected:
 // ----------------
 
 public:
-//	void OnDraw(CDC* pDC) override;  // overridden to draw this view
 	BOOL PreCreateWindow(CREATESTRUCT& cs) override;
 	void OnInitialUpdate() override;
 	void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
@@ -36,26 +35,21 @@ public:
 	void Dump(CDumpContext& dc) const override;
 #endif
 #endif
-
-//protected:
-//	BOOL OnPreparePrinting(CPrintInfo* pInfo) override;
-//	void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo) override;
-//	void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo) override;
-
 	
 // Methods
 // ----------------
-
-public:
+private:
+	afx_msg void OnLvnItemActivate(NMHDR* pNMHDR = nullptr, LRESULT* pResult = nullptr);
+	void OnSelectDeleteInContextMenu();
+	void OnSelectInsertInContextMenu();
+	void OnSelectUpdateInContextMenu();
+	void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
 	CCitiesDocument* GetDocument() const;
 	
 // Members
 // ----------------
-
 private:
-	
-public:
-	afx_msg void OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult);
+
 };
 
 

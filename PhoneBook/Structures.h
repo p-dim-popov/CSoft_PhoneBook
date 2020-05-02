@@ -22,6 +22,18 @@ struct CITIES
 	/// <summary>Име на регион</summary>
 	TCHAR szRegion[CITIES_REGION_LENGTH + 1];
 
+	void SetId(const long lId) { this->lID = lId; }
+	void SetUpdateCounter(const long lUpdateCounter) { this->lUpdateCounter = lUpdateCounter; }
+	void SetName(const TCHAR* pszName) { _tcscpy_s(this->szName, pszName); }
+	void SetRegion(const TCHAR* pszRegion) { _tcscpy_s(this->szRegion, pszRegion); }
+	void InitData(const long lId, const long lUpdateCounter, const TCHAR* pszName, const TCHAR* pszRegion)
+	{
+		SetId(lId);
+		SetUpdateCounter(lUpdateCounter);
+		SetName(pszName);
+		SetRegion(pszRegion);
+	}
+	
 	CITIES()
 	{
 		SecureZeroMemory(this, sizeof(*this));

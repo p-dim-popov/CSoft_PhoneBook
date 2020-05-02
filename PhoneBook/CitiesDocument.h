@@ -14,8 +14,8 @@ class CCitiesDocument :	public CDocument
 public:
 	CCitiesDocument();
 	~CCitiesDocument();
-	
-	DECLARE_DYNCREATE(CCitiesDocument)
+
+DECLARE_DYNCREATE(CCitiesDocument)
 	
 // Methods
 // ----------------
@@ -25,9 +25,13 @@ public:
 	void Serialize(CArchive& ar) override;
 	CCitiesArray* GetAllCities();
 	CITIES* GetCityById(long lId);
-
+	bool EditCity(CITIES& recCity);
+	bool AddCityToDb(CITIES& recCity);
+	bool DeleteCity(const long lId);
+	
 private:
 	INT_PTR AddCityToRepository(CITIES& recCity);
+	bool PromptErrorOn(const INT nError, const TCHAR* pszMessage);
 	
 // Members
 // ----------------

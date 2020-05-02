@@ -40,3 +40,42 @@ BOOL CCitiesData::GetCityById(long lId, CITIES& recCity)
 
 	return TRUE;
 }
+
+BOOL CCitiesData::UpdateCityWithId(long lId, CITIES& recCity)
+{
+	const BOOL bResult = m_oCitiesTable.UpdateWhereID(lId, recCity);
+
+	if (!bResult)
+	{
+		TRACE(_T("Updating city by id in data level failed."));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+BOOL CCitiesData::InsertCity(const CITIES& recCity)
+{
+	const BOOL bResult = m_oCitiesTable.Insert(recCity);
+
+	if (!bResult)
+	{
+		TRACE(_T("Inserting city in data level failed."));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+BOOL CCitiesData::DeleteCity(const long lId)
+{
+	const BOOL bResult = m_oCitiesTable.DeleteWhereID(lId);
+
+	if (!bResult)
+	{
+		TRACE(_T("Deleting city in data level failed."));
+		return FALSE;
+	}
+
+	return TRUE;
+}

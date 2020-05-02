@@ -5,14 +5,12 @@
 ////////////////////////////////////////////////////////////
 // CCitiesDialog
 
-
 class CCitiesDialog : public CDialog
 {
 	DECLARE_DYNAMIC(CCitiesDialog)
 
 public:
-	CCitiesDialog(CWnd* pParent = nullptr);   // standard constructor
-	CCitiesDialog(CITIES oCity, CWnd* pParent = nullptr);   // constructor
+	CCitiesDialog(CWnd* pParent = nullptr, CITIES* pCity = nullptr);   // constructor
 	virtual ~CCitiesDialog();
 
 // Dialog Data
@@ -25,18 +23,58 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 	
-public:
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
-
 // Members
 // -------------
-private:
-	CString m_strName;
-	CString m_strRegion;
-	long m_lId;
+protected:
+	CITIES* m_pCity;
 	
 	CEdit m_oEdbName;
 	CEdit m_oEdbRegion;
-	//CListCtrl m_oLscCities;
+};
+
+////////////////////////////////////////////////////////////
+// CCitiesUpdateDialog
+
+class CCitiesUpdateDialog : public CCitiesDialog
+{
+public:
+	CCitiesUpdateDialog(CWnd* pParent = nullptr, CITIES* pCity = nullptr);
+	virtual ~CCitiesUpdateDialog();
+
+// Methods
+// -------------
+public:
+	virtual BOOL OnInitDialog();
+	virtual void OnOK();
+};
+
+////////////////////////////////////////////////////////////
+// CCitiesInsertDialog
+
+class CCitiesInsertDialog : public CCitiesDialog
+{
+public:
+	CCitiesInsertDialog(CWnd* pParent = nullptr, CITIES* pCity = nullptr);
+	virtual ~CCitiesInsertDialog();
+
+	// Methods
+	// -------------
+public:
+	virtual BOOL OnInitDialog();
+	virtual void OnOK();
+};
+
+////////////////////////////////////////////////////////////
+// CCitiesDeleteDialog
+
+class CCitiesDeleteDialog : public CCitiesDialog
+{
+public:
+	CCitiesDeleteDialog(CWnd* pParent = nullptr, CITIES* pCity = nullptr);
+	virtual ~CCitiesDeleteDialog();
+
+ //Methods
+ //-------------
+public:
+	virtual BOOL OnInitDialog();
 };

@@ -1,6 +1,10 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "CitiesDocument.h"
 
+#define CITIES_CREATE_ERROR 0
+#define CITIES_READ_ERROR 1
+#define CITIES_UPDATE_ERROR 2
+#define CIITES_DELETE_ERROR 3
 
 CCitiesDocument::CCitiesDocument()
 {
@@ -32,7 +36,7 @@ BOOL CCitiesDocument::OnNewDocument()
 		CITIES* pCity = m_oCitiesArray.GetAt(i);
 		m_oCitiesIndexesOfIds.SetAt(pCity->lID, i);
 	}
-	
+
 	return TRUE;
 }
 
@@ -57,7 +61,7 @@ CITIES* CCitiesDocument::GetCityById(long lId)
 {
 	CITIES* pCity;
 	long nIndexOfCity;
-	
+
 	BOOL bIsSuccessful = m_oCitiesIndexesOfIds.Lookup(lId, nIndexOfCity);
 	if (bIsSuccessful)
 	{
@@ -77,6 +81,90 @@ CITIES* CCitiesDocument::GetCityById(long lId)
 
 	pCity = m_oCitiesArray.GetAt(nIndexOfCity);
 	return pCity;
+}
+
+bool CCitiesDocument::EditCity(CITIES& recCity)
+{
+	const BOOL bResult = m_oCitiesData.UpdateCityWithId(recCity.lID, recCity);
+
+	if (!bResult)
+	{
+		const bool bShouldRetry = PromptErrorOn(
+			CITIES_UPDATE_ERROR,
+			_T("Възникна грешка. \
+Възможна причина: записът вече е обновен преди настъпване на настоящите промени. \
+Моля обновете вашите данни и опитайте да направите редакциите отново. \
+Ако сте сигурни, че това не е проблемът, може да опитате отново."));
+		
+		if (!bShouldRetry)
+		{
+			return false;	
+		}
+
+		EditCity(recCity);
+	}
+
+	return true;
+}
+
+bool CCitiesDocument::AddCityToDb(CITIES& recCity)
+{
+	const BOOL bResult = m_oCitiesData.InsertCity(recCity);
+
+	if (!bResult)
+	{
+		const bool bShouldRetry = PromptErrorOn(
+			CITIES_CREATE_ERROR,
+			_T("Съжаляваме за неудобството, но възникна грешка. \
+Възможна причина: проблем с връзката към базата данни (пр.: липса на достъп до Интернет). \
+Ако смятате, че проблемът не е от вас, може да опитате отново."));
+		
+		if (!bShouldRetry)
+		{
+			return false;
+		}
+
+		AddCityToDb(recCity);
+	}
+
+	return true;
+}
+
+bool CCitiesDocument::DeleteCity(const long lId)
+{
+	const BOOL bResult = m_oCitiesData.DeleteCity(lId);
+
+	if (!bResult)
+	{
+		PromptErrorOn(
+			CITIES_CREATE_ERROR,
+			_T("Съжаляваме за неудобството, но възникна грешка. \
+Възможна причина: проблем с връзката към базата данни (пр.: липса на достъп до Интернет). \
+Ако смятате, че проблемът не е от вас, може да опитате отново."));
+
+		return false;
+	}
+
+	return true;
+}
+
+
+bool CCitiesDocument::PromptErrorOn(const INT nError, const TCHAR* pszMessage)
+{
+	//TODO: may need to handle different errors diferently -> nError
+	
+	const int nReply = MessageBox(nullptr, pszMessage, _T("Информация"), MB_ICONINFORMATION | MB_RETRYCANCEL);
+
+	switch (nReply)
+	{
+	case IDCANCEL:
+		return false;
+	case IDRETRY:
+		return true;
+	default:
+		MessageBox(nullptr, _T("Не бяха извършени промени!"), _T("Информация"), MB_ICONWARNING);
+		return false;
+	}
 }
 
 INT_PTR CCitiesDocument::AddCityToRepository(CITIES& recCity)

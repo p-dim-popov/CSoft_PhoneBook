@@ -19,7 +19,11 @@ public:
 public:
 	BOOL GetAllCities(CCitiesArray& oCitiesArray);
 	BOOL GetCityById(long lId, CITIES& recCity);
-	
+	BOOL UpdateCityWithId(long lId, CITIES& recCity);
+	BOOL InsertCity(const CITIES& recCity);
+	BOOL DeleteCity(const long lId);
+
+
 // Members
 // ----------------
 private:
