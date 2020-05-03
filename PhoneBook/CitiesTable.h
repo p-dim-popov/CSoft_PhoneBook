@@ -63,7 +63,7 @@ public:
 	/// <param name="recCity">Структура CITIES върху която ще бъдат записани данните от БД</param>
 	/// <returns>BOOL - TRUE ако е успешно и FALSE ако е неуспешно</returns>
 	BOOL SelectWhereID(const long lID, CITIES& recCity);
-	
+
 	/// <summary>Функция за промяна на запис по дадено ID</summary>
 	/// <param name="lID">ID на град, който ще се ъпдейтва</param>
 	/// <param name="recCity">Град, който е ъпдейтнат</param>
@@ -86,20 +86,29 @@ private:
 	void SetUpDBInit(CDBPropSet& oDBPropSet);
 	
 	/// <summary>Функция за отваряне на Data Source</summary>
-	/// <param name="oDataSource">Обект за връзка към БД</param>
 	/// <returns>HRESULT - Статус за успеваемостта</returns>
-	HRESULT OpenDataSource(CDataSource& oDataSource);
+	HRESULT OpenDataSource();
+
+	/// <summary>Функция за отваряне на Session</summary>
+	/// <returns>HRESULT - Статус за успеваемостта</returns>
+	HRESULT OpenSession();
+
+	/// <summary>Функция за отваряне на Data Source и Session</summary>
+	/// <returns>HRESULT - Статус за успеваемостта</returns>
+	HRESULT OpenDataSourceAndSession();
 
 	/// <summary>Затваря DataSource, Session и CitiesTable</summary>
-	/// <param name="oDataSource">Обект с информация за базата</param>
-	/// <param name="oSession">Установена сесия</param>
-	/// <param name="oCitiesTable">Команда към базата</param>
-	/// <remarks>Не всички параметри са задължителни, зависи от етапа, в който трябва да бъдат затворени всички връзки</remarks>
-	void CloseAll(CDataSource* oDataSource = nullptr, CSession* oSession = nullptr, CCitiesTable* oCitiesTable = nullptr);
+	void CloseAll();
 
-	/// <summary>Настройка на типа на Rowset-а</summary>
+	/// <summary>Настройка на Rowset-а</summary>
 	/// <param name="oUpdateDBPropSet">Обект за сет от параметри за БД</param>
-	void SetUpRowset(CDBPropSet& oUpdateDBPropSet);
+	void PrepareDbForUpdate(CDBPropSet& oUpdateDBPropSet);
+
+	/// <summary>Изпълнява команда за взимане на запис</summary>
+	/// <param name="strQuery">Заявка за изпълнение към БД</param>
+	/// <param name="pUpdateDBPropSet">Указател към сет от параметри за БД</param>
+	/// <returns>HRESULT - Статус за успеваемостта</returns>
+	HRESULT ExecuteCommandGetRequestedRecord(const CString& strQuery, CDBPropSet* pUpdateDBPropSet = nullptr);
 
 // Members
 // ----------------

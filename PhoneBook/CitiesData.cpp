@@ -15,6 +15,9 @@ CCitiesData::~CCitiesData()
 {
 }
 
+// Methods
+// ----------------
+
 BOOL CCitiesData::GetAllCities(CCitiesArray& oCitiesArray)
 {
 	const BOOL bResult = m_oCitiesTable.SelectAll(oCitiesArray);
