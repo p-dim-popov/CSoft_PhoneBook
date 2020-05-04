@@ -18,7 +18,7 @@ CCitiesData::~CCitiesData()
 // Methods
 // ----------------
 
-BOOL CCitiesData::GetAllCities(CCitiesArray& oCitiesArray)
+BOOL CCitiesData::SelectAll(CCitiesArray& oCitiesArray)
 {
 	const BOOL bResult = m_oCitiesTable.SelectAll(oCitiesArray);
 	
@@ -31,7 +31,7 @@ BOOL CCitiesData::GetAllCities(CCitiesArray& oCitiesArray)
 	return TRUE;
 }
 
-BOOL CCitiesData::GetCityById(long lId, CITIES& recCity)
+BOOL CCitiesData::SelectWhereId(long lId, CITIES& recCity)
 {
 	const BOOL bResult = m_oCitiesTable.SelectWhereID(lId, recCity);
 	
@@ -44,7 +44,7 @@ BOOL CCitiesData::GetCityById(long lId, CITIES& recCity)
 	return TRUE;
 }
 
-BOOL CCitiesData::UpdateCityWithId(long lId, CITIES& recCity)
+BOOL CCitiesData::UpdateWhereId(long lId, CITIES& recCity)
 {
 	const BOOL bResult = m_oCitiesTable.UpdateWhereID(lId, recCity);
 
@@ -70,7 +70,7 @@ BOOL CCitiesData::InsertCity(const CITIES& recCity)
 	return TRUE;
 }
 
-BOOL CCitiesData::DeleteCity(const long lId)
+BOOL CCitiesData::DeleteWhereId(const long lId)
 {
 	const BOOL bResult = m_oCitiesTable.DeleteWhereID(lId);
 

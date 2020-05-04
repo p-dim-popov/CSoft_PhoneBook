@@ -24,13 +24,22 @@ CCitiesDialog::~CCitiesDialog()
 void CCitiesDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	
+
 	DDX_Control(pDX, IDC_EDB_CITIES_NAME, m_oEdbName);
-	DDX_Control(pDX, IDC_EDB_REGION, m_oEdbRegion);
+	DDX_Control(pDX, IDC_EDB_CITIES_REGION, m_oEdbRegion);
+	DDX_Control(pDX, IDC_BTN_CITIES_OK, m_oBtnOk);
+	DDX_Control(pDX, IDC_BTN_CITIES_CANCEL, m_oBtnCancel);
 }
 
 BEGIN_MESSAGE_MAP(CCitiesDialog, CDialog)
+	ON_BN_CLICKED(IDC_BTN_CITIES_OK, &CCitiesDialog::OnBnClickedBtnCitiesOk)
+	ON_BN_CLICKED(IDC_BTN_CITIES_CANCEL, &CCitiesDialog::OnBnClickedBtnCitiesCancel)
 END_MESSAGE_MAP()
+
+void CCitiesDialog::OnBnClickedBtnCitiesCancel()
+{
+	CDialog::OnCancel();
+}
 
 #pragma endregion CCitiesDialog
 
@@ -47,12 +56,14 @@ CCitiesUpdateDialog::~CCitiesUpdateDialog()
 {
 }
 
-// CCitiesDialog message handlers
+// CCitiesUpdateDialog message handlers
 
 BOOL CCitiesUpdateDialog::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	this->SetWindowText(_T("Update city"));
+	
 	m_oEdbName.SetWindowText(m_pCity->szName);
 	m_oEdbRegion.SetWindowText(m_pCity->szRegion);
 
@@ -63,7 +74,7 @@ BOOL CCitiesUpdateDialog::OnInitDialog()
 }
 
 
-void CCitiesUpdateDialog::OnOK()
+void CCitiesUpdateDialog::OnBnClickedBtnCitiesOk()
 {
 	CString strUpdatedName;
 	CString strUpdatedRegion;
@@ -105,11 +116,13 @@ CCitiesInsertDialog::~CCitiesInsertDialog()
 {
 }
 
-// CCitiesDialog message handlers
+// CCitiesInsertDialog message handlers
 
 BOOL CCitiesInsertDialog::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+
+	this->SetWindowText(_T("Add city"));
 
 	m_oEdbName.SetWindowText(m_pCity->szName);
 	m_oEdbRegion.SetWindowText(m_pCity->szRegion);
@@ -121,7 +134,7 @@ BOOL CCitiesInsertDialog::OnInitDialog()
 }
 
 
-void CCitiesInsertDialog::OnOK()
+void CCitiesInsertDialog::OnBnClickedBtnCitiesOk()
 {
 	CString strUpdatedName;
 	CString strUpdatedRegion;
@@ -158,19 +171,29 @@ CCitiesDeleteDialog::~CCitiesDeleteDialog()
 {
 }
 
-// CCitiesDialog message handlers
+// CCitiesDeleteDialog message handlers
 
 BOOL CCitiesDeleteDialog::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	this->SetWindowText(_T("Delete city?"));
+	
 	m_oEdbName.EnableWindow(FALSE);
 	m_oEdbRegion.EnableWindow(FALSE);
 	
 	m_oEdbName.SetWindowText(m_pCity->szName);
 	m_oEdbRegion.SetWindowText(m_pCity->szRegion);
+
+	m_oBtnOk.SetWindowText(_T("Delete"));
 	
 	return TRUE;
 }
 
+void CCitiesDeleteDialog::OnBnClickedBtnCitiesOk()
+{
+	CDialog::OnOK();
+}
+
 #pragma endregion CCitiesDeleteDialog
+

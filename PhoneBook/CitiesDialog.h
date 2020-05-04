@@ -30,6 +30,12 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
+	// MFC Message Handlers
+	// ----------------
+protected:
+	afx_msg virtual void OnBnClickedBtnCitiesOk() = 0;
+	afx_msg virtual void OnBnClickedBtnCitiesCancel();
+
 	// Members
 	// -------------
 protected:
@@ -37,6 +43,8 @@ protected:
 	
 	CEdit m_oEdbName;
 	CEdit m_oEdbRegion;
+	CButton m_oBtnOk;
+	CButton m_oBtnCancel;
 };
 
 ////////////////////////////////////////////////////////////
@@ -56,7 +64,7 @@ public:
 	// ----------------
 public:
 	virtual BOOL OnInitDialog() override;
-	virtual void OnOK() override;
+	virtual void OnBnClickedBtnCitiesOk() override;
 };
 
 ////////////////////////////////////////////////////////////
@@ -75,7 +83,7 @@ public:
 	// ----------------
 public:
 	virtual BOOL OnInitDialog() override;
-	virtual void OnOK() override;
+	virtual void OnBnClickedBtnCitiesOk() override;
 };
 
 ////////////////////////////////////////////////////////////
@@ -94,4 +102,5 @@ public:
 	// ----------------
 public:
 	virtual BOOL OnInitDialog() override;
+	virtual void OnBnClickedBtnCitiesOk() override;
 };

@@ -81,7 +81,7 @@ CITIES* CCitiesDocument::GetCityById(long lId)
 	
 	CITIES recCity;
 	// Записът се търси в бд и се записва в recCity, ако не е намерен, функцията се връща с nullptr
-	bIsSuccessful = m_oCitiesData.GetCityById(lId, recCity);
+	bIsSuccessful = m_oCitiesData.SelectWhereId(lId, recCity);
 	if (!bIsSuccessful)
 	{
 		TRACE("Error: could not get city from data in document.");
@@ -107,7 +107,7 @@ bool CCitiesDocument::UpdateCitiesInDocument()
 {
 	DoEmptyRepository();
 	
-	const BOOL bResult = m_oCitiesData.GetAllCities(m_oCitiesArray);
+	const BOOL bResult = m_oCitiesData.SelectAll(m_oCitiesArray);
 	if (!bResult)
 	{
 		TRACE(_T("Error getting all cities in document"));
@@ -120,7 +120,7 @@ bool CCitiesDocument::UpdateCitiesInDocument()
 
 bool CCitiesDocument::EditCity(CITIES& recCity, CView* pView)
 {
-	const BOOL bResult = m_oCitiesData.UpdateCityWithId(recCity.lID, recCity);
+	const BOOL bResult = m_oCitiesData.UpdateWhereId(recCity.lID, recCity);
 
 	if (!bResult)
 	{
@@ -169,7 +169,7 @@ bool CCitiesDocument::AddCityToDb(CITIES& recCity, CView* pView)
 
 bool CCitiesDocument::DeleteCity(const long lId, CView* pView)
 {
-	const BOOL bResult = m_oCitiesData.DeleteCity(lId);
+	const BOOL bResult = m_oCitiesData.DeleteWhereId(lId);
 
 	if (!bResult)
 	{

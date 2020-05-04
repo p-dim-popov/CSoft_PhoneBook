@@ -10,10 +10,14 @@
 #define ID_WINDOW_MANAGER               131
 #define IDR_CITIES_CONTEXT_MENU         314
 #define IDCANCEL                        1000
+#define IDC_BTN_CITIES_CANCEL           1000
 #define IDC_EDB_CITIES_NAME             1002
 #define IDC_STT_CITIES_NAME             1003
 #define IDC_EDB_REGION                  1005
+#define IDC_EDB_CITIES_REGION           1005
 #define IDC_LSC_CITIES                  1007
+#define IDC_STT_CITIES_REGION           1009
+#define IDC_BTN_CITIES_OK               1010
 #define ID_INSERT_UPDATE                32771
 #define ID_INSERT_JJ                    32772
 #define ID_JJ_KM                        32773
@@ -43,9 +47,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        317
+#define _APS_NEXT_RESOURCE_VALUE        318
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1009
+#define _APS_NEXT_CONTROL_VALUE         1011
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

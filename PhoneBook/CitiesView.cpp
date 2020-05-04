@@ -112,7 +112,7 @@ void CCitiesView::UpdateRowsData(CListCtrl* pListCtrl)
 	{
 		pListCtrl = &GetListCtrl();
 	}
-	
+
 	const int nItemsCount = pListCtrl->GetItemCount();
 	if (nItemsCount > 0)
 	{
@@ -125,7 +125,7 @@ void CCitiesView::UpdateRowsData(CListCtrl* pListCtrl)
 
 	// Документ - за работа с данните
 	CCitiesDocument* pCitiesDocument = GetDocument();
-	
+
 	// Данни - CITIES
 	CCitiesArray* pCitiesArray = pCitiesDocument->GetAllCities();
 
@@ -156,7 +156,7 @@ void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 	CListCtrl& oListCtrl = GetListCtrl();
 	CCitiesDocument* pCitiesDocument = GetDocument();
 	const int nIndex = oListCtrl.GetSelectionMark();
-	
+
 	if (nIndex == -1)
 	{
 		return;
@@ -172,21 +172,25 @@ void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 
 	const INT_PTR nDialogEndResult = oCitiesUpdateDialog.DoModal();
 
-	if (nDialogEndResult == IDOK)
-	{		
-		const bool bIsSuccessful = pCitiesDocument->EditCity(recCity);
-		
-		if (bIsSuccessful)
-		{
-			MessageBox(_T("Промените бяха запазени успешно!"), _T("Информация"));
-		}
+	if (nDialogEndResult != IDOK)
+	{
+		return;
 	}
+	
+	const bool bIsSuccessful = pCitiesDocument->EditCity(recCity);
+
+	if (!bIsSuccessful)
+	{
+		return;
+	}
+	
+	MessageBox(_T("Промените бяха запазени успешно!"), _T("Информация"));
 
 	if (!pResult)
 	{
 		return;
 	}
-	
+
 	*pResult = 0;
 }
 
@@ -210,18 +214,22 @@ void CCitiesView::OnSelectDeleteInContextMenu()
 		_tstol(oListCtrl.GetItemText(nIndex, CITY_UPDATE_COUNTER_COLUMN).GetString()),
 		oListCtrl.GetItemText(nIndex, CITY_NAME_COLUMN).GetString(),
 		oListCtrl.GetItemText(nIndex, CITY_REGION_COLUMN).GetString());
-	
+
 	const INT_PTR nDialogEndResult = oCitiesDeleteDialog.DoModal();
 
-	if (nDialogEndResult == IDOK)
+	if (nDialogEndResult != IDOK)
 	{
-		const bool bIsSuccessful = pCitiesDocument->DeleteCity(recCity.lID);
-
-		if (bIsSuccessful)
-		{
-			MessageBox(_T("Промените бяха запазени успешно!"), _T("Информация"));
-		}
+		return;
 	}
+
+	const bool bIsSuccessful = pCitiesDocument->DeleteCity(recCity.lID);
+
+	if (!bIsSuccessful)
+	{
+		return;
+	}
+
+	MessageBox(_T("Промените бяха запазени успешно!"), _T("Информация"));
 }
 
 void CCitiesView::OnSelectInsertInContextMenu()
@@ -232,15 +240,19 @@ void CCitiesView::OnSelectInsertInContextMenu()
 
 	const INT_PTR nDialogEndResult = oCitiesInsertDialog.DoModal();
 
-	if (nDialogEndResult == IDOK)
+	if (nDialogEndResult != IDOK)
 	{
-		const bool bIsSuccessful = pCitiesDocument->AddCityToDb(recCity);
-
-		if (bIsSuccessful)
-		{
-			MessageBox(_T("Промените бяха запазени успешно!"), _T("Информация"));
-		}
+		return;
 	}
+
+	const bool bIsSuccessful = pCitiesDocument->AddCityToDb(recCity);
+
+	if (!bIsSuccessful)
+	{
+		return;
+	}
+
+	MessageBox(_T("Промените бяха запазени успешно!"), _T("Информация"));
 }
 
 void CCitiesView::OnSelectUpdateInContextMenu()
@@ -253,34 +265,36 @@ void CCitiesView::OnSelectRefreshInContextMenu()
 	// Ъпдейт при ползване от повече от една инстанция на приложението
 	CCitiesDocument* pCitiesDocument = GetDocument();
 	pCitiesDocument->UpdateCitiesInDocument();
-	
+
 	OnUpdate(nullptr, NULL, nullptr);
 }
 
-void CCitiesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos /*= nullptr*/)
+void CCitiesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos)
 {
-	CListCtrl& oListCtrl = GetListCtrl();
 	ScreenToClient(&oMousePos);
 
-	const int htItem = oListCtrl.HitTest(oMousePos);
-
-	if (htItem == -1)
-	{
-		return;
-	}
-	
 	CMenu oMenu;
-
 	oMenu.LoadMenu(IDR_CITIES_CONTEXT_MENU);
+
+	CListCtrl& oListCtrl = GetListCtrl();
+	const int nSelectedItem = oListCtrl.HitTest(oMousePos);
+
+	// Ако менюто не е отворено върху елемент, се скриват опциите за елемент
+	if (nSelectedItem == -1)
+	{
+		oMenu.RemoveMenu(ID_OPTIONS_EDIT_CITIES, MF_BYCOMMAND);
+		oMenu.RemoveMenu(ID_OPTIONS_DELETE_CITIES, MF_BYCOMMAND);
+	}
+
 	CMenu* pPopup = oMenu.GetSubMenu(0);
-	
+
 	ClientToScreen(&oMousePos);
 	const int nSelectedOption = int(pPopup->TrackPopupMenu(
-		TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_LEFTALIGN | TPM_RETURNCMD, 
-		oMousePos.x, 
-		oMousePos.y, 
+		TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_LEFTALIGN | TPM_RETURNCMD,
+		oMousePos.x,
+		oMousePos.y,
 		this));
-	
+
 	switch (nSelectedOption)
 	{
 	case ID_OPTIONS_EDIT_CITIES:
@@ -298,5 +312,4 @@ void CCitiesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos /*= n
 	default:
 		break;
 	}
-	
 }

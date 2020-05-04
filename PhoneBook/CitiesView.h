@@ -70,7 +70,7 @@ private:
 	/// <param name="pWnd">Указател към прозорец с осъщественото действие</param>
 	/// <param name="oPoint">Обект с информация за местоположението на курсора</param>
 	void OnContextMenu(CWnd* pWnd, CPoint oPoint);
-
+	
 	/// <summary>Обновяване на данните в лист контрола</summary>
 	/// <param name="pListCtrl">Указател към лист контрола</param>
 	void UpdateRowsData(CListCtrl* pListCtrl = nullptr);
