@@ -53,16 +53,16 @@ private:
 	#pragma region ContextMenuOptions
 
 	/// <summary>Отваря диалог за изтриване на запис</summary>
-	void OnSelectDeleteInContextMenu();
+	void OnContextMenuBtnDelete();
 
 	/// <summary>Отваря диалог за добавяне на запис</summary>
-	void OnSelectInsertInContextMenu();
+	void OnContextMenuBtnInsert();
 	
 	/// <summary>Отваря диалог за редактиране на запис</summary>
-	void OnSelectUpdateInContextMenu();
+	void OnContextMenuBtnUpdate();
 	
 	/// <summary>Отваря диалог за опресняване на данните</summary>
-	void OnSelectRefreshInContextMenu();
+	void OnContextMenuBtnRefresh();
 	
 	#pragma endregion ContextMenuOptions
 
@@ -70,19 +70,32 @@ private:
 	/// <param name="pWnd">Указател към прозорец с осъщественото действие</param>
 	/// <param name="oPoint">Обект с информация за местоположението на курсора</param>
 	void OnContextMenu(CWnd* pWnd, CPoint oPoint);
-	
+
 	/// <summary>Обновяване на данните в лист контрола</summary>
-	/// <param name="pListCtrl">Указател към лист контрола</param>
-	void UpdateRowsData(CListCtrl* pListCtrl = nullptr);
+	void LoadRowsData();
 
 	/// <summary>Достъп до документа</summary>
 	/// <returns>Указател към документа - CCitiesDocument
 	CCitiesDocument* GetDocument() const;
+
+	/// <summary>Изкарва MessageBox с подаденото съобщение и грешка</summary>
+	/// <param name="nError">Грешка, която се е случила</param>
+	/// <param name="pszMessage">Съобщение, което ще се изведе</param>
+	/// <returns>bool: при OK - true, при CANCEL - false</returns>
+	bool PromptErrorOn(const INT nError, const TCHAR* pszMessage);
+
+	INT GetCityIndexInListCtrlByItemData(DWORD_PTR dwPtr) const;
 	
+	void UpdateOnOperationCreate(const DWORD_PTR dwCityItemData);
+	void UpdateOnOperationUpdate(const DWORD_PTR dwCityItemData);
+	void UpdateOnOperationDelete(const DWORD_PTR dwCityItemData);
+	void ClearRowsData();
+
+
 // Members
 // ----------------
 private:
-
+	CITIES m_recCity;
 };
 
 

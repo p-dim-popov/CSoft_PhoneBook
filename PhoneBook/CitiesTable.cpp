@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "CitiesTable.h"
 
+#define FIRST_ACCESSOR 0
 #define SECOND_ACCESSOR 1
 #define ERROR_COMMIT_MESSAGE _T("Error ending transaction. Error: %d\n")
 #define ERROR_DATA_SOURCE_OPEN_MESSAGE _T("Unable to connect to SQL Server database. Error: %d\n")
@@ -17,6 +18,7 @@
 #define ERROR_NO_RECORD_WITH_ID_MESSAGE _T("Error - no record with that id. Query: %s HRESULT: %d.\n")
 #define ERROR_ExecuteCommandGetRequestedRecord_MESSAGE _T("Getting record failed.")
 #define ERROR_OpenDataSourceAndSession_MESSAGE _T("Opening data source and session failed.")
+#define ERROR_GETTING_RESULTING_ID_MESSAGE _T("Error getting id after insert: %d.")
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -101,7 +103,6 @@ void CCitiesTable::PrepareDbForUpdate(CDBPropSet& oUpdateDBPropSet)
 	oUpdateDBPropSet.AddProperty(DBPROP_IRowsetScroll, true);
 	oUpdateDBPropSet.AddProperty(DBPROP_IRowsetChange, true);
 	oUpdateDBPropSet.AddProperty(DBPROP_UPDATABILITY, DBPROPVAL_UP_CHANGE | DBPROPVAL_UP_INSERT | DBPROPVAL_UP_DELETE);
-
 }
 
 HRESULT CCitiesTable::ExecuteCommandGetRequestedRecord(const CString& strQuery, CDBPropSet* pUpdateDBPropSet)
@@ -253,7 +254,7 @@ BOOL CCitiesTable::SelectWhereID(const long lID, CITIES& recCity)
 	return TRUE;
 }
 
-BOOL CCitiesTable::UpdateWhereID(const long lID, const CITIES& recCity)
+BOOL CCitiesTable::UpdateWhereID(const long lID, CITIES& recCity)
 {
 	HRESULT hResult = S_OK;
 
@@ -295,7 +296,7 @@ BOOL CCitiesTable::UpdateWhereID(const long lID, const CITIES& recCity)
 
 		return FALSE;
 	}
-	
+
 	// Проверка на версиите - на подадения запис и този от базата
 	if (m_recCity.lUpdateCounter != recCity.lUpdateCounter)
 	{
@@ -308,11 +309,11 @@ BOOL CCitiesTable::UpdateWhereID(const long lID, const CITIES& recCity)
 		return FALSE;
 	}
 
+	// Инкрементиране на брояча за версиите
+	recCity.lUpdateCounter++;
+	
 	// Записване на новите стойности върху записа от базата данни
 	m_recCity = recCity;
-
-	// Инкрементиране на брояча за версиите
-	m_recCity.lUpdateCounter++;
 
 	// Записване на новите стойности в базата данни
 	hResult = this->SetData(SECOND_ACCESSOR);
@@ -346,7 +347,7 @@ BOOL CCitiesTable::UpdateWhereID(const long lID, const CITIES& recCity)
 	return TRUE;
 }
 
-BOOL CCitiesTable::Insert(const CITIES& recCity)
+BOOL CCitiesTable::Insert(CITIES& recCity)
 {
 	HRESULT hResult = S_OK;
 
@@ -374,9 +375,10 @@ BOOL CCitiesTable::Insert(const CITIES& recCity)
 	// Настройка на типа на Rowset-а
 	CDBPropSet oUpdateDBPropSet(DBPROPSET_ROWSET);
 	this->PrepareDbForUpdate(oUpdateDBPropSet);
+	oUpdateDBPropSet.AddProperty(DBPROP_SERVERDATAONINSERT, true);
 
 	// Конструиране на заявката
-	const CString strQuery = _T("SELECT TOP 0 * FROM CITIES");
+	const CString strQuery = _T("SELECT TOP 0 * FROM CITIES WITH (SERIALIZABLE)");
 
 	// Изпълняване на заявката
 	hResult = this->Open(m_oSession, strQuery, &oUpdateDBPropSet);
@@ -408,10 +410,22 @@ BOOL CCitiesTable::Insert(const CITIES& recCity)
 	m_recCity = recCity;
 
 	// Вмъкване в БД
-	hResult = CRowset::Insert(SECOND_ACCESSOR);
+	hResult = CRowset::Insert(SECOND_ACCESSOR, true);
 	if (FAILED(hResult))
 	{
 		TRACE(ERROR_INSERT_MESSAGE, hResult);
+
+		m_oSession.Abort();
+
+		this->CloseAll();
+
+		return FALSE;
+	}
+
+	hResult = GetDataHere(FIRST_ACCESSOR, &recCity.lID);
+	if (FAILED(hResult))
+	{
+		TRACE(ERROR_GETTING_RESULTING_ID_MESSAGE, hResult);
 
 		m_oSession.Abort();
 
@@ -481,7 +495,7 @@ BOOL CCitiesTable::DeleteWhereID(const long lID)
 
 		return FALSE;
 	}
-	
+
 	// Изтриване на записа
 	hResult = this->Delete();
 	if (FAILED(hResult))

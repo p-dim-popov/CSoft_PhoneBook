@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Structures.h"
+#include "CitiesView.h"
 
 ////////////////////////////////////////////////////////////
 // CCitiesDialog
@@ -17,7 +17,7 @@ class CCitiesDialog : public CDialog
 	// Constructor / Destructor
 	// ----------------
 public:
-	CCitiesDialog(CWnd* pParent = nullptr, CITIES* pCity = nullptr);   // constructor
+	CCitiesDialog(CITIES& recCity, CCitiesDocument::Operations eOperation);   // constructor
 	virtual ~CCitiesDialog();
 
 // Dialog Data
@@ -29,78 +29,22 @@ public:
 	// ----------------
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	virtual BOOL OnInitDialog() override;
 
 	// MFC Message Handlers
 	// ----------------
 protected:
-	afx_msg virtual void OnBnClickedBtnCitiesOk() = 0;
+	afx_msg virtual void OnBnClickedBtnCitiesOk();
 	afx_msg virtual void OnBnClickedBtnCitiesCancel();
 
 	// Members
 	// -------------
 protected:
-	CITIES* m_pCity;
+	CITIES& m_recCity;
+	CCitiesDocument::Operations m_eOperation;
 	
 	CEdit m_oEdbName;
 	CEdit m_oEdbRegion;
 	CButton m_oBtnOk;
 	CButton m_oBtnCancel;
-};
-
-////////////////////////////////////////////////////////////
-// CCitiesUpdateDialog
-
-/// <summary>Клас диалог за ъпдейт на град</summary>
-class CCitiesUpdateDialog : public CCitiesDialog
-{
-	// Constructor / Destructor
-	// ----------------
-
-public:
-	CCitiesUpdateDialog(CWnd* pParent = nullptr, CITIES* pCity = nullptr);
-	virtual ~CCitiesUpdateDialog();
-
-	// Overrides
-	// ----------------
-public:
-	virtual BOOL OnInitDialog() override;
-	virtual void OnBnClickedBtnCitiesOk() override;
-};
-
-////////////////////////////////////////////////////////////
-// CCitiesInsertDialog
-
-/// <summary>Клас диалог за добавяне на нов град</summary>
-class CCitiesInsertDialog : public CCitiesDialog
-{
-	// Constructor / Destructor
-	// ----------------
-public:
-	CCitiesInsertDialog(CWnd* pParent = nullptr, CITIES* pCity = nullptr);
-	virtual ~CCitiesInsertDialog();
-
-	// Overrides
-	// ----------------
-public:
-	virtual BOOL OnInitDialog() override;
-	virtual void OnBnClickedBtnCitiesOk() override;
-};
-
-////////////////////////////////////////////////////////////
-// CCitiesDeleteDialog
-
-/// <summary>Клас диалог за изтриване на град</summary>
-class CCitiesDeleteDialog : public CCitiesDialog
-{
-	// Constructor / Destructor
-	// ----------------
-public:
-	CCitiesDeleteDialog(CWnd* pParent = nullptr, CITIES* pCity = nullptr);
-	virtual ~CCitiesDeleteDialog();
-
-	// Overrides
-	// ----------------
-public:
-	virtual BOOL OnInitDialog() override;
-	virtual void OnBnClickedBtnCitiesOk() override;
 };

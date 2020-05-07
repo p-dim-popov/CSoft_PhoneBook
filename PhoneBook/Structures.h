@@ -33,6 +33,10 @@ struct CITIES
 		SetName(pszName);
 		SetRegion(pszRegion);
 	}
+	bool operator==(CITIES recCity) const
+	{
+		return !(_tcscmp(this->szName, recCity.szName) || _tcscmp(this->szRegion, recCity.szRegion) || this->lID - recCity.lID || this->lUpdateCounter - recCity.lUpdateCounter);
+	}
 	
 	CITIES()
 	{
@@ -114,9 +118,16 @@ class CAutoDeleteTypedPtrArray : public CTypedPtrArray<CPtrArray, T>
 // ----------------
 public:
 	CAutoDeleteTypedPtrArray() {}
+	CAutoDeleteTypedPtrArray(CAutoDeleteTypedPtrArray& oAutoDeleteTypedPtrArray)
+	{
+		for (INT_PTR i = 0; i < oAutoDeleteTypedPtrArray.GetCount(); i++)
+		{
+			this->Add(oAutoDeleteTypedPtrArray.GetAt(i));
+		}
+	}
 	~CAutoDeleteTypedPtrArray()
 	{
-		this->DeleteAll();
+		DeleteAll();
 	}
 
 // Methods

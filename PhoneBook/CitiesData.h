@@ -37,7 +37,7 @@ public:
 	/// <summary>Добавя запис в бд</summary>
 	/// <param name="recCity">Структура с информация</param>
 	/// <returns>BOOL: при успех - TRUE, при неуспех - FALSE</returns>
-	BOOL InsertCity(const CITIES& recCity);
+	BOOL InsertCity(CITIES& recCity);
 
 	/// <summary>Изтрива запис по Id от бд</summary>
 	/// <param name="lId">Id на търсения запис</param>

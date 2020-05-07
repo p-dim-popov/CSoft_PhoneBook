@@ -12,8 +12,8 @@
 
 IMPLEMENT_DYNAMIC(CCitiesDialog, CDialog)
 
-CCitiesDialog::CCitiesDialog(CWnd* pParent /*=nullptr*/, CITIES* pCity /*=nullptr*/)
-	: CDialog(IDD_CITIES_DIALOG, pParent), m_pCity(pCity)
+CCitiesDialog::CCitiesDialog(CITIES& recCity, CCitiesDocument::Operations eOperation)
+	: CDialog(IDD_CITIES_DIALOG), m_recCity(recCity), m_eOperation(eOperation)
 {
 }
 
@@ -36,164 +36,96 @@ BEGIN_MESSAGE_MAP(CCitiesDialog, CDialog)
 	ON_BN_CLICKED(IDC_BTN_CITIES_CANCEL, &CCitiesDialog::OnBnClickedBtnCitiesCancel)
 END_MESSAGE_MAP()
 
+BOOL CCitiesDialog::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	m_oEdbName.SetWindowText(m_recCity.szName);
+	m_oEdbRegion.SetWindowText(m_recCity.szRegion);
+	
+	m_oEdbName.SetLimitText(CITIES_NAME_LENGTH);
+	m_oEdbRegion.SetLimitText(CITIES_REGION_LENGTH);
+
+	switch (m_eOperation)
+	{
+	case CCitiesDocument::Operations::OperationsCreate:
+		this->SetWindowText(_T("Add city"));
+		
+		break;
+	case CCitiesDocument::Operations::OperationsUpdate:
+		this->SetWindowText(_T("Update city"));
+
+		break;
+	case CCitiesDocument::Operations::OperationsDelete:
+		this->SetWindowText(_T("Delete city?"));
+
+		m_oEdbName.EnableWindow(FALSE);
+		m_oEdbRegion.EnableWindow(FALSE);
+
+		m_oBtnOk.SetWindowText(_T("Delete"));
+
+		break;
+	default:
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+
 void CCitiesDialog::OnBnClickedBtnCitiesCancel()
 {
 	CDialog::OnCancel();
 }
 
-#pragma endregion CCitiesDialog
-
-/////////////////////////////////////////////////////////////////////
-// CCitiesUpdateDialog
-#pragma region CCitiesUpdateDialog
-
-CCitiesUpdateDialog::CCitiesUpdateDialog(CWnd* pParent /*=nullptr*/, CITIES* pCity /*=nullptr*/)
-	: CCitiesDialog(pParent, pCity)
+void CCitiesDialog::OnBnClickedBtnCitiesOk()
 {
-}
+	CString strNewName;
+	CString strNewRegion;
 
-CCitiesUpdateDialog::~CCitiesUpdateDialog()
-{
-}
-
-// CCitiesUpdateDialog message handlers
-
-BOOL CCitiesUpdateDialog::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-
-	this->SetWindowText(_T("Update city"));
 	
-	m_oEdbName.SetWindowText(m_pCity->szName);
-	m_oEdbRegion.SetWindowText(m_pCity->szRegion);
-
-	m_oEdbName.SetLimitText(CITIES_NAME_LENGTH);
-	m_oEdbRegion.SetLimitText(CITIES_REGION_LENGTH);
-	
-	return TRUE;
-}
-
-
-void CCitiesUpdateDialog::OnBnClickedBtnCitiesOk()
-{
-	CString strUpdatedName;
-	CString strUpdatedRegion;
-
-	m_oEdbName.GetWindowText(strUpdatedName);
-	m_oEdbRegion.GetWindowText(strUpdatedRegion);
-
-	if (strUpdatedName.IsEmpty() || strUpdatedRegion.IsEmpty())
+	switch (m_eOperation)
 	{
-		MessageBox(_T("Не се допускат празни полета!"), _T("Внимание"), MB_ICONEXCLAMATION);
-		return;
-	}
+	case CCitiesDocument::Operations::OperationsCreate:
+		m_oEdbName.GetWindowText(strNewName);
+		m_oEdbRegion.GetWindowText(strNewRegion);
 
-	if (strUpdatedName.Compare(m_pCity->szName) == 0 &&
-		strUpdatedRegion.Compare(m_pCity->szRegion) == 0)
-	{
-		// няма промени
-		return;
-	}
+		//TODO: validate with regex
+		if (strNewName.IsEmpty() || strNewRegion.IsEmpty())
+		{
+			MessageBox(_T("Не се допускат празни полета!"), _T("Внимание"), MB_ICONEXCLAMATION);
+			return;
+		}
 
-	m_pCity->SetName(strUpdatedName);
-	m_pCity->SetRegion(strUpdatedRegion);
+		m_recCity = CITIES();
+		m_recCity.SetName(strNewName);
+		m_recCity.SetRegion(strNewRegion);
+
+		break;
+	case CCitiesDocument::Operations::OperationsUpdate:
+		m_oEdbName.GetWindowText(strNewName);
+		m_oEdbRegion.GetWindowText(strNewRegion);
+
+		if (strNewName.IsEmpty() || strNewRegion.IsEmpty())
+		{
+			MessageBox(_T("Не се допускат празни полета!"), _T("Внимание"), MB_ICONEXCLAMATION);
+			return;
+		}
+
+		if (strNewName.Compare(m_recCity.szName) == 0 &&
+			strNewRegion.Compare(m_recCity.szRegion) == 0)
+		{
+			// няма промени
+			return;
+		}
+
+		m_recCity.SetName(strNewName);
+		m_recCity.SetRegion(strNewRegion);
+
+		break;
+	default:
+		break;
+	}
 
 	CDialog::OnOK();
 }
-
-#pragma endregion CCitiesUpdateDialog
-
-/////////////////////////////////////////////////////////////////////
-// CCitiesInsertDialog
-#pragma region CCitiesInsertDialog
-
-CCitiesInsertDialog::CCitiesInsertDialog(CWnd* pParent /*=nullptr*/, CITIES* pCity /*=nullptr*/)
-	: CCitiesDialog(pParent, pCity)
-{
-}
-
-CCitiesInsertDialog::~CCitiesInsertDialog()
-{
-}
-
-// CCitiesInsertDialog message handlers
-
-BOOL CCitiesInsertDialog::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-
-	this->SetWindowText(_T("Add city"));
-
-	m_oEdbName.SetWindowText(m_pCity->szName);
-	m_oEdbRegion.SetWindowText(m_pCity->szRegion);
-
-	m_oEdbName.SetLimitText(CITIES_NAME_LENGTH);
-	m_oEdbRegion.SetLimitText(CITIES_REGION_LENGTH);
-	
-	return TRUE;
-}
-
-
-void CCitiesInsertDialog::OnBnClickedBtnCitiesOk()
-{
-	CString strUpdatedName;
-	CString strUpdatedRegion;
-
-	m_oEdbName.GetWindowText(strUpdatedName);
-	m_oEdbRegion.GetWindowText(strUpdatedRegion);
-
-	//TODO: validate with regex
-	if (strUpdatedName.IsEmpty() || strUpdatedRegion.IsEmpty())
-	{
-		MessageBox(_T("Не се допускат празни полета!"), _T("Внимание"), MB_ICONEXCLAMATION);
-		return;
-	}
-	
-	*m_pCity = CITIES();
-	m_pCity->SetName(strUpdatedName);
-	m_pCity->SetRegion(strUpdatedRegion);
-
-	CDialog::OnOK();
-}
-
-#pragma endregion CCitiesInsertDialog
-
-/////////////////////////////////////////////////////////////////////
-// CCitiesDeleteDialog
-#pragma region CCitiesDeleteDialog
-
-CCitiesDeleteDialog::CCitiesDeleteDialog(CWnd* pParent /*=nullptr*/, CITIES* pCity /*=nullptr*/)
-	: CCitiesDialog(pParent, pCity)
-{
-}
-
-CCitiesDeleteDialog::~CCitiesDeleteDialog()
-{
-}
-
-// CCitiesDeleteDialog message handlers
-
-BOOL CCitiesDeleteDialog::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-
-	this->SetWindowText(_T("Delete city?"));
-	
-	m_oEdbName.EnableWindow(FALSE);
-	m_oEdbRegion.EnableWindow(FALSE);
-	
-	m_oEdbName.SetWindowText(m_pCity->szName);
-	m_oEdbRegion.SetWindowText(m_pCity->szRegion);
-
-	m_oBtnOk.SetWindowText(_T("Delete"));
-	
-	return TRUE;
-}
-
-void CCitiesDeleteDialog::OnBnClickedBtnCitiesOk()
-{
-	CDialog::OnOK();
-}
-
-#pragma endregion CCitiesDeleteDialog
-

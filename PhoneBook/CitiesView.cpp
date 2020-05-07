@@ -7,18 +7,16 @@
 #include "CitiesDialog.h"
 #include "resource.h"
 
-#define CITY_ID_COLUMN 0
-#define CITY_NAME_COLUMN 1
-#define CITY_REGION_COLUMN 2
-#define CITY_UPDATE_COUNTER_COLUMN 3
-#define CITY_ID_COLUMN_LABEL _T("ID")
+#define CITY_NAME_COLUMN 0
+#define CITY_REGION_COLUMN 1
 #define CITY_NAME_COLUMN_LABEL _T("Име")
 #define CITY_REGION_COLUMN_LABEL _T("Регион")
-#define CITY_UPDATE_COUNTER_COLUMN_LABEL _T("")
-#define CITY_ID_COLUMN_WIDTH 0
 #define CITY_NAME_COLUMN_WIDTH 150
 #define CITY_REGION_COLUMN_WIDTH 150
-#define CITY_UPDATE_COUNTER_COLUMN_WIDTH 0
+#define CITIES_CREATE_ERROR 0
+#define CITIES_READ_ERROR 1
+#define CITIES_UPDATE_ERROR 2
+#define CITIES_DELETE_ERROR 3
 
 /////////////////////////////////////////////////////////////////////////////
 // CCitiesView
@@ -48,26 +46,83 @@ void CCitiesView::OnInitialUpdate()
 	// Вмъкване на колони
 	oListCtrl.InsertColumn(CITY_NAME_COLUMN, CITY_NAME_COLUMN_LABEL);
 	oListCtrl.InsertColumn(CITY_REGION_COLUMN, CITY_REGION_COLUMN_LABEL);
-	oListCtrl.InsertColumn(CITY_ID_COLUMN, CITY_ID_COLUMN_LABEL);
-	oListCtrl.InsertColumn(CITY_UPDATE_COUNTER_COLUMN, CITY_UPDATE_COUNTER_COLUMN_LABEL);
 
 	// Задаване на ширина на колоните
 	oListCtrl.SetColumnWidth(CITY_NAME_COLUMN, CITY_NAME_COLUMN_WIDTH);
 	oListCtrl.SetColumnWidth(CITY_REGION_COLUMN, CITY_REGION_COLUMN_WIDTH);
-	oListCtrl.SetColumnWidth(CITY_ID_COLUMN, CITY_ID_COLUMN_WIDTH);
-	oListCtrl.SetColumnWidth(CITY_UPDATE_COUNTER_COLUMN, CITY_UPDATE_COUNTER_COLUMN_WIDTH);
 
 	// Допълнителна стилизация на контролата
 	oListCtrl.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 
-	UpdateRowsData(&oListCtrl);
+	LoadRowsData();
 }
 
 void CCitiesView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
 	CView::OnUpdate(pSender, lHint, pHint);
 
-	UpdateRowsData();
+	if (lHint && pHint)
+	{
+		const CCitiesDocument::CCitiesUpdateObject* oCitiesUpdateObject = reinterpret_cast<CCitiesDocument::CCitiesUpdateObject*>(pHint);
+		const DWORD_PTR dwCityItemData = oCitiesUpdateObject->GetUpdateCityData();
+
+		switch (lHint)
+		{
+		case CCitiesDocument::OperationsCreate:
+			UpdateOnOperationCreate(dwCityItemData);
+			break;
+		case CCitiesDocument::OperationsUpdate:
+			UpdateOnOperationUpdate(dwCityItemData);
+			break;
+		case CCitiesDocument::OperationsDelete:
+			UpdateOnOperationDelete(dwCityItemData);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void CCitiesView::UpdateOnOperationCreate(const DWORD_PTR dwCityItemData)
+{
+	CListCtrl& oListCtrl = GetListCtrl();
+	CITIES* pCity = reinterpret_cast<CITIES*>(dwCityItemData);
+
+	// Вмъкване на редове
+	const INT nInsertIndex = oListCtrl.InsertItem(oListCtrl.GetItemCount(), pCity->szName);
+	oListCtrl.SetItemText(nInsertIndex, CITY_REGION_COLUMN, pCity->szRegion);
+	oListCtrl.SetItemData(nInsertIndex, dwCityItemData);
+}
+
+void CCitiesView::UpdateOnOperationUpdate(const DWORD_PTR dwCityItemData)
+{
+	CListCtrl& oListCtrl = GetListCtrl();
+	CITIES* pCity = reinterpret_cast<CITIES*>(dwCityItemData);
+
+	pCity = reinterpret_cast<CITIES*>(dwCityItemData);
+	const INT nIndexInListCtrl = GetCityIndexInListCtrlByItemData(dwCityItemData);
+
+	oListCtrl.SetItemText(nIndexInListCtrl, CITY_NAME_COLUMN, pCity->szName);
+	oListCtrl.SetItemText(nIndexInListCtrl, CITY_REGION_COLUMN, pCity->szRegion);
+}
+
+void CCitiesView::UpdateOnOperationDelete(const DWORD_PTR dwCityItemData)
+{
+	const INT nIndexInListCtrl = GetCityIndexInListCtrlByItemData(dwCityItemData);
+	GetListCtrl().DeleteItem(nIndexInListCtrl);
+}
+
+void CCitiesView::ClearRowsData()
+{
+	CListCtrl& oListCtrl = GetListCtrl();
+
+	const int nItemsCount = oListCtrl.GetItemCount();
+	if (nItemsCount > 0)
+	{
+		oListCtrl.SetRedraw(FALSE);
+		oListCtrl.DeleteAllItems();
+		oListCtrl.SetRedraw(TRUE);
+	}
 }
 
 BOOL CCitiesView::PreCreateWindow(CREATESTRUCT& cs) {
@@ -103,47 +158,28 @@ void CCitiesView::Dump(CDumpContext& dc) const
 CCitiesDocument* CCitiesView::GetDocument() const
 {
 	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CCitiesDocument)));
-	return static_cast<CCitiesDocument*>(m_pDocument);
+	return dynamic_cast<CCitiesDocument*>(m_pDocument);
 }
 
-void CCitiesView::UpdateRowsData(CListCtrl* pListCtrl)
+void CCitiesView::LoadRowsData()
 {
-	if (!pListCtrl)
-	{
-		pListCtrl = &GetListCtrl();
-	}
-
-	const int nItemsCount = pListCtrl->GetItemCount();
-	if (nItemsCount > 0)
-	{
-		pListCtrl->SetRedraw(FALSE);
-		pListCtrl->DeleteAllItems();
-		pListCtrl->SetRedraw(TRUE);
-
-		ASSERT(pListCtrl->GetItemCount() == 0);
-	}
-
+	CListCtrl& oListCtrl = GetListCtrl();
+	
 	// Документ - за работа с данните
 	CCitiesDocument* pCitiesDocument = GetDocument();
 
 	// Данни - CITIES
-	CCitiesArray* pCitiesArray = pCitiesDocument->GetAllCities();
+	CCitiesArray& oCitiesArray = pCitiesDocument->GetAllCities();
 
 	// Зареждане на всички градове в списък в лист контролата
-	for (INT_PTR i = 0; i < pCitiesArray->GetCount(); i++)
+	for (INT_PTR i = 0; i < oCitiesArray.GetCount(); i++)
 	{
-		CITIES* pCity = pCitiesArray->GetAt(i);
+		CITIES* pCity = oCitiesArray.GetAt(i);
 
 		// Вмъкване на редове
-		CString strId;
-		strId.Format(_T("%d"), pCity->lID);
-		CString strUpdateCounter;
-		strUpdateCounter.Format(_T("%d"), pCity->lUpdateCounter);
-
-		const INT nInsertIndex = pListCtrl->InsertItem(i, strId);
-		pListCtrl->SetItemText(nInsertIndex, CITY_NAME_COLUMN, pCity->szName);
-		pListCtrl->SetItemText(nInsertIndex, CITY_REGION_COLUMN, pCity->szRegion);
-		pListCtrl->SetItemText(nInsertIndex, CITY_UPDATE_COUNTER_COLUMN, strUpdateCounter);
+		const INT nInsertIndex = oListCtrl.InsertItem(i, pCity->szName);
+		oListCtrl.SetItemText(nInsertIndex, CITY_REGION_COLUMN, pCity->szRegion);
+		oListCtrl.SetItemData(nInsertIndex, reinterpret_cast<DWORD_PTR>(pCity));
 	}
 }
 
@@ -152,7 +188,6 @@ void CCitiesView::UpdateRowsData(CListCtrl* pListCtrl)
 
 void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	CITIES recCity;
 	CListCtrl& oListCtrl = GetListCtrl();
 	CCitiesDocument* pCitiesDocument = GetDocument();
 	const int nIndex = oListCtrl.GetSelectionMark();
@@ -162,29 +197,33 @@ void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 		return;
 	}
 
-	recCity.InitData(
-		_tstol(oListCtrl.GetItemText(nIndex, CITY_ID_COLUMN).GetString()),
-		_tstol(oListCtrl.GetItemText(nIndex, CITY_UPDATE_COUNTER_COLUMN).GetString()),
-		oListCtrl.GetItemText(nIndex, CITY_NAME_COLUMN).GetString(),
-		oListCtrl.GetItemText(nIndex, CITY_REGION_COLUMN).GetString());
+	m_recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
 
-	CCitiesUpdateDialog oCitiesUpdateDialog(this, &recCity);
+	CCitiesDialog oCitiesUpdateDialog(m_recCity, CCitiesDocument::OperationsUpdate);
 
-	const INT_PTR nDialogEndResult = oCitiesUpdateDialog.DoModal();
-
-	if (nDialogEndResult != IDOK)
+	if (oCitiesUpdateDialog.DoModal() != IDOK)
 	{
 		return;
 	}
-	
-	const bool bIsSuccessful = pCitiesDocument->EditCity(recCity);
+
+	const bool bIsSuccessful = pCitiesDocument->EditCity(m_recCity);
 
 	if (!bIsSuccessful)
 	{
-		return;
+		const bool bShouldRetry = PromptErrorOn(
+			CITIES_UPDATE_ERROR,
+			_T("Възникна грешка. \n\
+Възможна причина: записът вече е обновен преди настъпване на настоящите промени. \n\
+Моля обновете вашите данни и опитайте да направите редакциите отново. \n\
+Ако сте сигурни, че това не е проблемът, може да опитате отново."));
+
+		if (bShouldRetry)
+		{
+			//return EditCity(recCity);
+			//TODO: implement
+		}
 	}
-	
-	MessageBox(_T("Промените бяха запазени успешно!"), _T("Информация"));
+	//TODO: msg in view err only
 
 	if (!pResult)
 	{
@@ -196,11 +235,9 @@ void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 
 // Функции за избор при контекстно меню
 
-void CCitiesView::OnSelectDeleteInContextMenu()
+void CCitiesView::OnContextMenuBtnDelete()
 {
-	CITIES recCity;
 	CCitiesDocument* pCitiesDocument = GetDocument();
-	CCitiesDeleteDialog oCitiesDeleteDialog(this, &recCity);
 	CListCtrl& oListCtrl = GetListCtrl();
 	const int nIndex = oListCtrl.GetSelectionMark();
 
@@ -209,64 +246,68 @@ void CCitiesView::OnSelectDeleteInContextMenu()
 		return;
 	}
 
-	recCity.InitData(
-		_tstol(oListCtrl.GetItemText(nIndex, CITY_ID_COLUMN).GetString()),
-		_tstol(oListCtrl.GetItemText(nIndex, CITY_UPDATE_COUNTER_COLUMN).GetString()),
-		oListCtrl.GetItemText(nIndex, CITY_NAME_COLUMN).GetString(),
-		oListCtrl.GetItemText(nIndex, CITY_REGION_COLUMN).GetString());
+	m_recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
+	CCitiesDialog oCitiesDialog(m_recCity, CCitiesDocument::OperationsDelete);
 
-	const INT_PTR nDialogEndResult = oCitiesDeleteDialog.DoModal();
-
-	if (nDialogEndResult != IDOK)
+	if (oCitiesDialog.DoModal() != IDOK)
 	{
 		return;
 	}
 
-	const bool bIsSuccessful = pCitiesDocument->DeleteCity(recCity.lID);
+	const bool bIsSuccessful = pCitiesDocument->DeleteCity(m_recCity);
 
 	if (!bIsSuccessful)
 	{
-		return;
+		PromptErrorOn(
+			CITIES_DELETE_ERROR,
+			_T("Съжаляваме за неудобството, но възникна грешка. \n\
+Възможна причина: проблем с връзката към базата данни (пр.: липса на достъп до Интернет). \n\
+Ако смятате, че проблемът не е от вас, може да опитате отново."));
 	}
-
-	MessageBox(_T("Промените бяха запазени успешно!"), _T("Информация"));
 }
 
-void CCitiesView::OnSelectInsertInContextMenu()
+void CCitiesView::OnContextMenuBtnInsert()
 {
-	CITIES recCity;
+	m_recCity = CITIES();
 	CCitiesDocument* pCitiesDocument = GetDocument();
-	CCitiesInsertDialog oCitiesInsertDialog(this, &recCity);
+	CCitiesDialog oCitiesDialog(m_recCity, CCitiesDocument::OperationsCreate);
 
-	const INT_PTR nDialogEndResult = oCitiesInsertDialog.DoModal();
-
-	if (nDialogEndResult != IDOK)
+	if (oCitiesDialog.DoModal() != IDOK)
 	{
 		return;
 	}
 
-	const bool bIsSuccessful = pCitiesDocument->AddCityToDb(recCity);
+	const bool bIsSuccessful = pCitiesDocument->AddCity(m_recCity);
 
 	if (!bIsSuccessful)
 	{
-		return;
-	}
+		const bool bShouldRetry = PromptErrorOn(
+			CITIES_CREATE_ERROR,
+			_T("Съжаляваме за неудобството, но възникна грешка. \n\
+Възможна причина: проблем с връзката към базата данни (пр.: липса на достъп до Интернет). \n\
+Ако смятате, че проблемът не е от вас или е отстранен, може да опитате отново."));
 
-	MessageBox(_T("Промените бяха запазени успешно!"), _T("Информация"));
+		if (bShouldRetry)
+		{
+			//return AddCity(recCity);
+			//TODO: implement
+		}
+	}
 }
 
-void CCitiesView::OnSelectUpdateInContextMenu()
+void CCitiesView::OnContextMenuBtnUpdate()
 {
 	OnLvnItemActivate();
 }
 
-void CCitiesView::OnSelectRefreshInContextMenu()
+void CCitiesView::OnContextMenuBtnRefresh()
 {
 	// Ъпдейт при ползване от повече от една инстанция на приложението
 	CCitiesDocument* pCitiesDocument = GetDocument();
-	pCitiesDocument->UpdateCitiesInDocument();
+	pCitiesDocument->RefreshData();
 
-	OnUpdate(nullptr, NULL, nullptr);
+	ClearRowsData();
+	LoadRowsData();
 }
 
 void CCitiesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos)
@@ -298,18 +339,50 @@ void CCitiesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos)
 	switch (nSelectedOption)
 	{
 	case ID_OPTIONS_EDIT_CITIES:
-		OnSelectUpdateInContextMenu();
+		OnContextMenuBtnUpdate();
 		break;
 	case ID_OPTIONS_DELETE_CITIES:
-		OnSelectDeleteInContextMenu();
+		OnContextMenuBtnDelete();
 		break;
 	case ID_OPTIONS_INSERT_CITIES:
-		OnSelectInsertInContextMenu();
+		OnContextMenuBtnInsert();
 		break;
 	case ID_OPTIONS_REFRESH_CITIES:
-		OnSelectRefreshInContextMenu();
+		OnContextMenuBtnRefresh();
 		break;
 	default:
 		break;
 	}
+}
+
+bool CCitiesView::PromptErrorOn(const INT nError, const TCHAR* pszMessage)
+{
+	//TODO: may need to handle different errors diferently -> nError
+
+	const int nReply = MessageBox(pszMessage, _T("Информация"), MB_ICONINFORMATION | MB_RETRYCANCEL);
+
+	switch (nReply)
+	{
+	case IDCANCEL:
+		return false;
+	case IDRETRY:
+		return true;
+	default:
+		MessageBox(_T("Не бяха извършени промени!"), _T("Информация"), MB_ICONWARNING);
+		return false;
+	}
+}
+
+INT CCitiesView::GetCityIndexInListCtrlByItemData(DWORD_PTR dwPtr) const
+{
+	CListCtrl& oListCtrl = GetListCtrl();
+	for (int i = 0; i < oListCtrl.GetItemCount(); ++i)
+	{
+		if (oListCtrl.GetItemData(i) == dwPtr)
+		{
+			return i;
+		}
+	}
+
+	return -1;
 }

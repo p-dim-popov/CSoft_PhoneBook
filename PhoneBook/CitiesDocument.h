@@ -33,61 +33,87 @@ private:
 
 public:
 	/// <summary>Достъп до поле m_oCitiesArray</summary>
-	/// <returns>Указател към m_oCitiesArray</returns>
-	CCitiesArray* GetAllCities();
+	/// <returns>Референция към m_oCitiesArray</returns>
+	CCitiesArray& GetAllCities();
 
 	/// <summary>Достъп до запис от m_oCitiesArray</summary>
 	/// <param name="lId">Id на град, който се търси</param>
-	/// <returns>Указател към запис от m_oCitiesArray</returns>
+	/// <returns>Референция към запис от m_oCitiesArray</returns>
 	/// <remarks>Ако записът не е намерен в полето, се търси в бд и ако се намери, документът се обновява</remarks>
-	CITIES* GetCityById(long lId);
+	CITIES& GetCityById(long lId);
 
 	/// <summary>Обновяване на полето за записи</summary>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	bool UpdateCitiesInDocument();
+	bool RefreshData();
 
 	/// <summary>Обновяване на единичен запис в бд</summary>
 	/// <param name="recCity">Град, с приложените промени</param>
-	/// <param name="pView">Указател към изглед, извършил промяната</param>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	bool EditCity(CITIES& recCity, CView* pView = nullptr);
+	bool EditCity(CITIES& recCity);
 
 	/// <summary>Добавяне на единичен запис в бд</summary>
 	/// <param name="recCity">Град</param>
-	/// <param name="pView">Указател към изглед, извършил промяната</param>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	bool AddCityToDb(CITIES& recCity, CView* pView = nullptr);
+	bool AddCity(CITIES& recCity);
 
 	/// <summary>Изтриване на единичен запис от бд</summary>
-	/// <param name="lId">Id на град</param>
-	/// <param name="pView">Указател към изглед, извършил промяната</param>
+	/// <param name="recCity">Id на град</param>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	bool DeleteCity(const long lId, CView* pView = nullptr);
+	bool DeleteCity(const CITIES& recCity);
 	
 private:
 	/// <summary>Изтриване на всички записи от m_oCitiesArray и m_oCitiesIndexesOfIds</summary>
-	void DoEmptyRepository();
+	void CleanRepository();
 
 	/// <summary>Започва процедура по обновяване на всички изгледи</summary>
-	/// <param name="pView">Указател към изглед, извършил промяната</param>
 	/// <remarks>Обновява полетата за данни, вдига флаг за промяна и извиква UpdateAllViews</remarks>
-	void OnUpdateAllViews(CView* pView = nullptr);
+	void OnUpdateAllViews(LPARAM lHint, CObject* pHint);
 
 	/// <summary>Добавя запис на град към документа</summary>
 	/// <param name="recCity">Запис на град - CITIES</param>
 	/// <remarks>Записва в полето за данни m_oCitiesArray, като създава индекс за индексите от m_oCitiesArray по Id в m_oCitiesIndexesOfIds</remarks>
-	INT_PTR AddCityToRepository(CITIES& recCity);
+	INT_PTR AddCityToRepository(const CITIES& recCity);
 
 	/// <summary>Премахва запис на град от документа</summary>
 	/// <param name="lId">Id на запис на град</param>
 	/// <remarks>Премахва от запис от полето за данни m_oCitiesArray и m_oCitiesIndexesOfIds</remarks>
-	void RemoveCityFromRepository(const long lId);
 
-	/// <summary>Изкарва MessageBox с подаденото съобщение и грешка</summary>
-	/// <param name="nError">Грешка, която се е случила</param>
-	/// <param name="pszMessage">Съобщение, което ще се изведе</param>
-	/// <returns>bool: при OK - true, при CANCEL - false</returns>
-	bool PromptErrorOn(const INT nError, const TCHAR* pszMessage);
+	DWORD_PTR RemoveCityFromRepositoryById(const long lId);
+	CITIES* GetCityFromRepositoryById(long lId);
+
+// Enum
+// ----------------
+public:
+enum Operations
+{
+	OperationsCreate = 1,
+	OperationsRead = 2,
+	OperationsUpdate = 3,
+	OperationsDelete = 4
+};
+
+// Class
+// ---------------
+public:
+class CCitiesUpdateObject : public CObject
+{
+// Constructor/Destructor
+public:
+	CCitiesUpdateObject() : m_dwCityData(NULL) {}
+	CCitiesUpdateObject(DWORD_PTR dwCityData) : m_dwCityData(dwCityData) {}
+	~CCitiesUpdateObject() {}
+
+	//CCitiesUpdateObject& operator=(const CITIES& recCity);
+
+// Methods
+// ----------------
+	DWORD_PTR GetUpdateCityData() const;
+	CCitiesUpdateObject& operator=(DWORD_PTR dwCityData);
+// Members
+// ----------------
+private:
+	DWORD_PTR m_dwCityData;
+};
 	
 // Members
 // ----------------

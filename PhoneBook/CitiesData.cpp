@@ -57,7 +57,7 @@ BOOL CCitiesData::UpdateWhereId(long lId, CITIES& recCity)
 	return TRUE;
 }
 
-BOOL CCitiesData::InsertCity(const CITIES& recCity)
+BOOL CCitiesData::InsertCity(CITIES& recCity)
 {
 	const BOOL bResult = m_oCitiesTable.Insert(recCity);
 

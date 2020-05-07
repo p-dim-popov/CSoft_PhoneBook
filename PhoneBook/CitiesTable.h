@@ -68,12 +68,13 @@ public:
 	/// <param name="lID">ID на град, който ще се ъпдейтва</param>
 	/// <param name="recCity">Град, който е ъпдейтнат</param>
 	/// <returns>BOOL - TRUE ако е успешно и FALSE ако е неуспешно</returns>
-	BOOL UpdateWhereID(const long lID, const CITIES& recCity);
+	BOOL UpdateWhereID(const long lID, CITIES& recCity);
 	
 	/// <summary>Функция за добавяне на запис в базата данни</summary>
 	/// <param name="recCity">Нов град, който ще се добавя</param>
+	/// <param name="lResultingId"> Id колона на нововписания запис </param>
 	/// <returns>BOOL - TRUE ако е успешно и FALSE ако е неуспешно</returns>
-	BOOL Insert(const CITIES& recCity);
+	BOOL Insert(CITIES& recCity);
 	
 	/// <summary>Функция за изтриване на запис от базата данни</summary>
 	/// <param name="lID">ID на град, който ще се премахва</param>
