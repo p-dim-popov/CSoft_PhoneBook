@@ -34,8 +34,8 @@ protected:
 	// MFC Message Handlers
 	// ----------------
 protected:
-	afx_msg virtual void OnBnClickedBtnCitiesOk();
-	afx_msg virtual void OnBnClickedBtnCitiesCancel();
+	afx_msg void OnOK() override;
+	afx_msg void OnCancel() override;
 
 	// Members
 	// -------------
@@ -43,8 +43,8 @@ protected:
 	CITIES& m_recCity;
 	CCitiesDocument::Operations m_eOperation;
 	
-	CEdit m_oEdbName;
-	CEdit m_oEdbRegion;
-	CButton m_oBtnOk;
-	CButton m_oBtnCancel;
+	CEdit m_edbName;
+	CEdit m_edbRegion;
+	CButton m_btnOk;
+	CButton m_btnCancel;
 };

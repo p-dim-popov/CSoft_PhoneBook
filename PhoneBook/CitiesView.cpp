@@ -53,6 +53,7 @@ void CCitiesView::OnInitialUpdate()
 
 	// Допълнителна стилизация на контролата
 	oListCtrl.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
+	oListCtrl.ModifyStyle(NULL, LVS_SINGLESEL, 0);
 
 	LoadRowsData();
 }
@@ -164,7 +165,7 @@ CCitiesDocument* CCitiesView::GetDocument() const
 void CCitiesView::LoadRowsData()
 {
 	CListCtrl& oListCtrl = GetListCtrl();
-	
+
 	// Документ - за работа с данните
 	CCitiesDocument* pCitiesDocument = GetDocument();
 
@@ -199,31 +200,9 @@ void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 
 	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
 
-	CCitiesDialog oCitiesUpdateDialog(recCity, CCitiesDocument::OperationsUpdate);
+	CCitiesDialog oCitiesDialog(recCity, CCitiesDocument::OperationsRead);
 
-	if (oCitiesUpdateDialog.DoModal() != IDOK)
-	{
-		return;
-	}
-
-	const bool bIsSuccessful = pCitiesDocument->EditCity(recCity);
-
-	if (!bIsSuccessful)
-	{
-		const bool bShouldRetry = PromptErrorOn(
-			CITIES_UPDATE_ERROR,
-			_T("Възникна грешка. \n\
-Възможна причина: записът вече е обновен преди настъпване на настоящите промени. \n\
-Моля обновете вашите данни и опитайте да направите редакциите отново. \n\
-Ако сте сигурни, че това не е проблемът, може да опитате отново."));
-
-		if (bShouldRetry)
-		{
-			//return EditCity(recCity);
-			//TODO: implement
-		}
-	}
-	//TODO: msg in view err only
+	oCitiesDialog.DoModal();
 
 	if (!pResult)
 	{
@@ -247,13 +226,16 @@ void CCitiesView::OnContextMenuBtnDelete()
 	}
 
 	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
-	CCitiesDialog oCitiesDialog(recCity, CCitiesDocument::OperationsDelete);
+	CString strCityName;
+	strCityName.Format(_T("Are you sure that you want to delete city %s?"), recCity.szName);
+	
+	const int nResult = MessageBox(strCityName, _T("Are you sure?"), MB_ICONINFORMATION | MB_OKCANCEL);
 
-	if (oCitiesDialog.DoModal() != IDOK)
+	if (nResult != IDOK)
 	{
 		return;
 	}
-
+	
 	const bool bIsSuccessful = pCitiesDocument->DeleteCity(recCity);
 
 	if (!bIsSuccessful)
@@ -297,7 +279,42 @@ void CCitiesView::OnContextMenuBtnInsert()
 
 void CCitiesView::OnContextMenuBtnUpdate()
 {
-	OnLvnItemActivate();
+	CListCtrl& oListCtrl = GetListCtrl();
+	CCitiesDocument* pCitiesDocument = GetDocument();
+	const int nIndex = oListCtrl.GetSelectionMark();
+
+	if (nIndex == -1)
+	{
+		return;
+	}
+
+	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
+
+	CCitiesDialog oCitiesUpdateDialog(recCity, CCitiesDocument::OperationsUpdate);
+
+	if (oCitiesUpdateDialog.DoModal() != IDOK)
+	{
+		return;
+	}
+
+	const bool bIsSuccessful = pCitiesDocument->EditCity(recCity);
+
+	if (!bIsSuccessful)
+	{
+		const bool bShouldRetry = PromptErrorOn(
+			CITIES_UPDATE_ERROR,
+			_T("Възникна грешка. \n\
+Възможна причина: записът вече е обновен преди настъпване на настоящите промени. \n\
+Моля обновете вашите данни и опитайте да направите редакциите отново. \n\
+Ако сте сигурни, че това не е проблемът, може да опитате отново."));
+
+		if (bShouldRetry)
+		{
+			//return EditCity(recCity);
+			//TODO: implement
+		}
+	}
+	//TODO: msg in view err only
 }
 
 void CCitiesView::OnContextMenuBtnRefresh()
@@ -378,7 +395,7 @@ INT CCitiesView::GetCityIndexInListCtrlByItemData(const DWORD_PTR dwData) const
 	CListCtrl& oListCtrl = GetListCtrl();
 
 	INT nIndex = -1;
-	
+
 	for (int i = 0; i < oListCtrl.GetItemCount(); ++i)
 	{
 		if (oListCtrl.GetItemData(i) == dwData)
