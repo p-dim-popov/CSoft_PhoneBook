@@ -197,16 +197,16 @@ void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 		return;
 	}
 
-	m_recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
+	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
 
-	CCitiesDialog oCitiesUpdateDialog(m_recCity, CCitiesDocument::OperationsUpdate);
+	CCitiesDialog oCitiesUpdateDialog(recCity, CCitiesDocument::OperationsUpdate);
 
 	if (oCitiesUpdateDialog.DoModal() != IDOK)
 	{
 		return;
 	}
 
-	const bool bIsSuccessful = pCitiesDocument->EditCity(m_recCity);
+	const bool bIsSuccessful = pCitiesDocument->EditCity(recCity);
 
 	if (!bIsSuccessful)
 	{
@@ -246,15 +246,15 @@ void CCitiesView::OnContextMenuBtnDelete()
 		return;
 	}
 
-	m_recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
-	CCitiesDialog oCitiesDialog(m_recCity, CCitiesDocument::OperationsDelete);
+	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
+	CCitiesDialog oCitiesDialog(recCity, CCitiesDocument::OperationsDelete);
 
 	if (oCitiesDialog.DoModal() != IDOK)
 	{
 		return;
 	}
 
-	const bool bIsSuccessful = pCitiesDocument->DeleteCity(m_recCity);
+	const bool bIsSuccessful = pCitiesDocument->DeleteCity(recCity);
 
 	if (!bIsSuccessful)
 	{
@@ -268,16 +268,16 @@ void CCitiesView::OnContextMenuBtnDelete()
 
 void CCitiesView::OnContextMenuBtnInsert()
 {
-	m_recCity = CITIES();
+	CITIES recCity = CITIES();
 	CCitiesDocument* pCitiesDocument = GetDocument();
-	CCitiesDialog oCitiesDialog(m_recCity, CCitiesDocument::OperationsCreate);
+	CCitiesDialog oCitiesDialog(recCity, CCitiesDocument::OperationsCreate);
 
 	if (oCitiesDialog.DoModal() != IDOK)
 	{
 		return;
 	}
 
-	const bool bIsSuccessful = pCitiesDocument->AddCity(m_recCity);
+	const bool bIsSuccessful = pCitiesDocument->AddCity(recCity);
 
 	if (!bIsSuccessful)
 	{
@@ -373,16 +373,19 @@ bool CCitiesView::PromptErrorOn(const INT nError, const TCHAR* pszMessage)
 	}
 }
 
-INT CCitiesView::GetCityIndexInListCtrlByItemData(DWORD_PTR dwPtr) const
+INT CCitiesView::GetCityIndexInListCtrlByItemData(const DWORD_PTR dwData) const
 {
 	CListCtrl& oListCtrl = GetListCtrl();
+
+	INT nIndex = -1;
+	
 	for (int i = 0; i < oListCtrl.GetItemCount(); ++i)
 	{
-		if (oListCtrl.GetItemData(i) == dwPtr)
+		if (oListCtrl.GetItemData(i) == dwData)
 		{
-			return i;
+			nIndex = i;
 		}
 	}
 
-	return -1;
+	return nIndex;
 }

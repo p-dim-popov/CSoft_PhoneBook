@@ -9,7 +9,6 @@
 #define IDR_PhoneBookTYPE               130
 #define ID_WINDOW_MANAGER               131
 #define IDR_CITIES_CONTEXT_MENU         314
-#define IDCANCEL                        1000
 #define IDC_BTN_CITIES_CANCEL           1000
 #define IDC_EDB_CITIES_NAME             1002
 #define IDC_STT_CITIES_NAME             1003

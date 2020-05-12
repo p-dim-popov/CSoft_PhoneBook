@@ -22,20 +22,36 @@ struct CITIES
 	/// <summary>Име на регион</summary>
 	TCHAR szRegion[CITIES_REGION_LENGTH + 1];
 
-	void SetId(const long lId) { this->lID = lId; }
+	/// <summary> Setter за ID </summary>
+	void SetID(const long lId) { this->lID = lId; }
+
+	/// <summary> Setter за UpdateCounter </summary>
 	void SetUpdateCounter(const long lUpdateCounter) { this->lUpdateCounter = lUpdateCounter; }
+
+	/// <summary> Setter за Name </summary>
 	void SetName(const TCHAR* pszName) { _tcscpy_s(this->szName, pszName); }
+
+	/// <summary> Setter за Region </summary>
 	void SetRegion(const TCHAR* pszRegion) { _tcscpy_s(this->szRegion, pszRegion); }
+
+	/// <summary> Функция за инициализиране на всички параметри на град </summary>
 	void InitData(const long lId, const long lUpdateCounter, const TCHAR* pszName, const TCHAR* pszRegion)
 	{
-		SetId(lId);
+		SetID(lId);
 		SetUpdateCounter(lUpdateCounter);
 		SetName(pszName);
 		SetRegion(pszRegion);
 	}
-	bool operator==(CITIES recCity) const
+
+	/// <summary> Фунцкия за сравнение на 2 града </summary>
+	/// <param name="recCity"> Град за сравнение </param>
+	/// <returns> 0 ако двата града са идентични по всички параметри </returns>
+	BOOL Compare(CITIES& recCity) const
 	{
-		return !(_tcscmp(this->szName, recCity.szName) || _tcscmp(this->szRegion, recCity.szRegion) || this->lID - recCity.lID || this->lUpdateCounter - recCity.lUpdateCounter);
+		return _tcscmp(this->szName, recCity.szName) ||
+			_tcscmp(this->szRegion, recCity.szRegion) || 
+			(this->lID - recCity.lID) ||
+			(this->lUpdateCounter - recCity.lUpdateCounter);
 	}
 	
 	CITIES()

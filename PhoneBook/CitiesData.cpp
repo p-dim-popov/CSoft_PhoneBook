@@ -21,20 +21,20 @@ CCitiesData::~CCitiesData()
 BOOL CCitiesData::SelectAll(CCitiesArray& oCitiesArray)
 {
 	const BOOL bResult = m_oCitiesTable.SelectAll(oCitiesArray);
-	
+
 	if (!bResult)
 	{
 		TRACE(_T("Getting all cities in data level failed."));
 		return FALSE;
 	}
-	
+
 	return TRUE;
 }
 
-BOOL CCitiesData::SelectWhereId(long lId, CITIES& recCity)
+BOOL CCitiesData::SelectWhereID(const long lID, CITIES& recCity)
 {
-	const BOOL bResult = m_oCitiesTable.SelectWhereID(lId, recCity);
-	
+	const BOOL bResult = m_oCitiesTable.SelectWhereID(lID, recCity);
+
 	if (!bResult)
 	{
 		TRACE(_T("Getting city by id in data level failed."));
@@ -44,9 +44,9 @@ BOOL CCitiesData::SelectWhereId(long lId, CITIES& recCity)
 	return TRUE;
 }
 
-BOOL CCitiesData::UpdateWhereId(long lId, CITIES& recCity)
+BOOL CCitiesData::UpdateWhereID(const long lID, CITIES& recCity)
 {
-	const BOOL bResult = m_oCitiesTable.UpdateWhereID(lId, recCity);
+	const BOOL bResult = m_oCitiesTable.UpdateWhereID(lID, recCity);
 
 	if (!bResult)
 	{
@@ -70,9 +70,9 @@ BOOL CCitiesData::InsertCity(CITIES& recCity)
 	return TRUE;
 }
 
-BOOL CCitiesData::DeleteWhereId(const long lId)
+BOOL CCitiesData::DeleteWhereID(const long lID)
 {
-	const BOOL bResult = m_oCitiesTable.DeleteWhereID(lId);
+	const BOOL bResult = m_oCitiesTable.DeleteWhereID(lID);
 
 	if (!bResult)
 	{

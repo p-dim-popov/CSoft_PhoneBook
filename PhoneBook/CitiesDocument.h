@@ -6,30 +6,30 @@
 // CCitiesDocument
 
 /// <summary>Клас документ на CITIES</summary>
-class CCitiesDocument :	public CDocument
+class CCitiesDocument : public CDocument
 {
 
-// Constructor / Destructor
-// ----------------
+	// Constructor / Destructor
+	// ----------------
 public:
 	CCitiesDocument();
 	~CCitiesDocument();
 
-DECLARE_DYNCREATE(CCitiesDocument)
+	DECLARE_DYNCREATE(CCitiesDocument)
 
-// Overrides
-// ----------------
+	// Overrides
+	// ----------------
 
 private:
 	/// <summary>Събира първоначална информация при инстанциране на нов документ</summary>
 	/// <returns>BOOL: при успех - TRUE, при неуспех (ако не успее да изтегли данните от бд)- FALSE</returns>
 	/// <remarks>Изтегля всички записи от бд и ги записва в полето за данни m_oCitiesArray, като създава индекс за индексите от m_oCitiesArray по Id в m_oCitiesIndexesOfIds</remarks>
 	BOOL OnNewDocument() override;
-	
+
 	void Serialize(CArchive& ar) override;
-	
-// Methods
-// ----------------
+
+	// Methods
+	// ----------------
 
 public:
 	/// <summary>Достъп до поле m_oCitiesArray</summary>
@@ -37,30 +37,30 @@ public:
 	CCitiesArray& GetAllCities();
 
 	/// <summary>Достъп до запис от m_oCitiesArray</summary>
-	/// <param name="lId">Id на град, който се търси</param>
+	/// <param name="lID">Id на град, който се търси</param>
 	/// <returns>Референция към запис от m_oCitiesArray</returns>
 	/// <remarks>Ако записът не е намерен в полето, се търси в бд и ако се намери, документът се обновява</remarks>
-	CITIES& GetCityById(long lId);
+	CITIES& GetCityById(const long lID);
 
 	/// <summary>Обновяване на полето за записи</summary>
-	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	bool RefreshData();
+	/// <returns>BOOL: при успех - TRUE, при неуспех - FALSE</returns>
+	BOOL RefreshData();
 
 	/// <summary>Обновяване на единичен запис в бд</summary>
 	/// <param name="recCity">Град, с приложените промени</param>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	bool EditCity(CITIES& recCity);
+	BOOL EditCity(CITIES& recCity);
 
 	/// <summary>Добавяне на единичен запис в бд</summary>
 	/// <param name="recCity">Град</param>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	bool AddCity(CITIES& recCity);
+	BOOL AddCity(CITIES& recCity);
 
 	/// <summary>Изтриване на единичен запис от бд</summary>
 	/// <param name="recCity">Id на град</param>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	bool DeleteCity(const CITIES& recCity);
-	
+	BOOL DeleteCity(const CITIES& recCity);
+
 private:
 	/// <summary>Изтриване на всички записи от m_oCitiesArray и m_oCitiesIndexesOfIds</summary>
 	void CleanRepository();
@@ -72,56 +72,65 @@ private:
 	/// <summary>Добавя запис на град към документа</summary>
 	/// <param name="recCity">Запис на град - CITIES</param>
 	/// <remarks>Записва в полето за данни m_oCitiesArray, като създава индекс за индексите от m_oCitiesArray по Id в m_oCitiesIndexesOfIds</remarks>
+	/// <returns>INT_PTR: индекса на новия град в m_oCitiesArray</returns>
 	INT_PTR AddCityToRepository(const CITIES& recCity);
 
 	/// <summary>Премахва запис на град от документа</summary>
-	/// <param name="lId">Id на запис на град</param>
+	/// <param name="lID">ID на запис на град</param>
 	/// <remarks>Премахва от запис от полето за данни m_oCitiesArray и m_oCitiesIndexesOfIds</remarks>
+	/// <returns> Връща адреса на паметта, която записът е заемал, като число. Ако изтриването е неуспешно: -1 </returns>
+	DWORD_PTR RemoveCityFromRepositoryByID(const long lID);
 
-	DWORD_PTR RemoveCityFromRepositoryById(const long lId);
-	CITIES* GetCityFromRepositoryById(long lId);
+	/// <summary>Връща указател към запис на град от документа</summary>
+	/// <param name="lID">ID на запис на град</param>
+	/// <param name="pCity"> Указател, в който ще се запише резултатът </param>
+	/// <returns> BOOL - TRUE при успешно намиране и FALSE при неуспех </returns>
+	CITIES* GetCityFromRepositoryByID(const long lID);
 
-// Enum
-// ----------------
+	/// <summary> Изчиства индексирането в m_oCitiesIndexesOfIds и го създава наново </summary>
+	void BuildCitiesIndexMap();
+
+	// Enum
+	// ----------------
 public:
-enum Operations
-{
-	OperationsCreate = 1,
-	OperationsRead = 2,
-	OperationsUpdate = 3,
-	OperationsDelete = 4
-};
+	enum Operations
+	{
+		OperationsCreate = 1,
+		OperationsRead = 2,
+		OperationsUpdate = 3,
+		OperationsDelete = 4
+	};
 
-// Class
-// ---------------
+	// Class
+	// ---------------
 public:
-class CCitiesUpdateObject : public CObject
-{
-// Constructor/Destructor
-public:
-	CCitiesUpdateObject() : m_dwCityData(NULL) {}
-	CCitiesUpdateObject(DWORD_PTR dwCityData) : m_dwCityData(dwCityData) {}
-	~CCitiesUpdateObject() {}
+	class CCitiesUpdateObject : public CObject
+	{
+		// Constructor/Destructor
+	public:
+		explicit CCitiesUpdateObject(DWORD_PTR dwCityData)
+			: m_dwCityData(dwCityData) {}
+		~CCitiesUpdateObject() {}
 
-	//CCitiesUpdateObject& operator=(const CITIES& recCity);
+		//CCitiesUpdateObject& operator=(const CITIES& recCity);
 
-// Methods
-// ----------------
-	DWORD_PTR GetUpdateCityData() const;
-	CCitiesUpdateObject& operator=(DWORD_PTR dwCityData);
-// Members
-// ----------------
-private:
-	DWORD_PTR m_dwCityData;
-};
-	
-// Members
-// ----------------
+	// Methods
+	// ----------------
+		DWORD_PTR GetUpdateCityData() const { return this->m_dwCityData; };
+
+		// Members
+		// ----------------
+	private:
+		DWORD_PTR m_dwCityData;
+	};
+
+	// Members
+	// ----------------
 private:
 	CCitiesData m_oCitiesData;
 	CCitiesArray m_oCitiesArray;
 	CMap<long, long, long, long> m_oCitiesIndexesOfIds;
-	
+
 #ifdef _DEBUG
 	void AssertValid() const override;
 	void Dump(CDumpContext& dc) const override;

@@ -1,8 +1,6 @@
 ﻿#include "pch.h"
 #include "CitiesDocument.h"
 
-#include <algorithm>
-
 /////////////////////////////////////////////////////////////////////////////
 // CCitiesDocument
 
@@ -30,19 +28,7 @@ BOOL CCitiesDocument::OnNewDocument()
 		return FALSE;
 	}
 
-	const BOOL bResult = m_oCitiesData.SelectAll(m_oCitiesArray);
-	if (!bResult)
-	{
-		TRACE(_T("Error getting all cities in document"));
-		return FALSE;
-	}
-
-	// create index by id
-	for (INT_PTR i = 0; i < m_oCitiesArray.GetCount(); i++)
-	{
-		CITIES* pCity = m_oCitiesArray.GetAt(i);
-		m_oCitiesIndexesOfIds.SetAt(pCity->lID, i);
-	}
+	RefreshData();
 
 	return TRUE;
 }
@@ -67,27 +53,28 @@ CCitiesArray& CCitiesDocument::GetAllCities()
 	return m_oCitiesArray;
 }
 
-CITIES& CCitiesDocument::GetCityById(long lId)
+CITIES& CCitiesDocument::GetCityById(const long lID)
 {
-	long nIndexOfCity;
+	long nIndexOfCity = -1;
 
 	// Търси си се дали записът съществува във вече изтелглените записи
-	const BOOL bIsSuccessful = m_oCitiesIndexesOfIds.Lookup(lId, nIndexOfCity);
-	if (!bIsSuccessful)
-	{
-		//TODO: handle
-	}
-	
+	const BOOL bIsSuccessful = m_oCitiesIndexesOfIds.Lookup(lID, nIndexOfCity);
+
+	ASSERT(nIndexOfCity > -1 && bIsSuccessful);
+
 	CITIES* pCity = m_oCitiesArray.GetAt(nIndexOfCity);
+
+	ASSERT(pCity);
+
 	return *pCity;
 }
 
-bool CCitiesDocument::RefreshData()
+BOOL CCitiesDocument::RefreshData()
 {
 	/*
 	CCitiesArray oCitiesArray;
 	CCitiesArray oCitiesNewArray;
-	
+
 	const BOOL bResult = m_oCitiesData.SelectAll(oCitiesArray);
 	if (!bResult)
 	{
@@ -99,7 +86,7 @@ bool CCitiesDocument::RefreshData()
 	for (INT_PTR i = 0; i < oCitiesArray.GetCount(); i++)
 	{
 		CITIES* pCity = oCitiesArray.GetAt(i);
-		CITIES* pCityFromRepo = GetCityFromRepositoryById(pCity->lID);
+		CITIES* pCityFromRepo = GetCityFromRepositoryByID(pCity->lID);
 
 		// if city is new
 		if (!pCityFromRepo)
@@ -126,12 +113,12 @@ bool CCitiesDocument::RefreshData()
 	}
 
 	CArray<long, long> oIndexesToSave;
-	
+
 	// save only deleted ones' index in oIndexesToDelete
 	for (INT_PTR i = 0; i < oCitiesNewArray.GetCount(); i++)
 	{
 		CITIES* pNewCity = oCitiesNewArray.GetAt(i);
-		CITIES* pOldCity = GetCityFromRepositoryById(pNewCity->lID);
+		CITIES* pOldCity = GetCityFromRepositoryByID(pNewCity->lID);
 
 		if (pOldCity)
 		{
@@ -142,14 +129,14 @@ bool CCitiesDocument::RefreshData()
 	}
 
 	std::sort(oIndexesToSave.GetData(), oIndexesToSave.GetData() + oIndexesToSave.GetSize());
-	
+
 	// leave deleted ones only
 	for (INT_PTR i = oIndexesToSave.GetCount() - 1; i > 0 ; --i)
 	{
 		const int nIndex = oIndexesToSave.GetAt(i);
 		m_oCitiesArray.RemoveAt(nIndex);
 	}
-	
+
 	// allocate deleted ones memory
 	m_oCitiesArray.DeleteAll();
 
@@ -164,13 +151,13 @@ bool CCitiesDocument::RefreshData()
 		m_oCitiesIndexesOfIds.SetAt(pCurrent->lID, nIndex);
 	}
 
-	// remove pointers so that memory won't be auto allocated 
+	// remove pointers so that memory won't be auto allocated
 	oCitiesNewArray.RemoveAll();
 	oCitiesArray.DeleteAll();
 	*/
 
 	CleanRepository();
-	
+
 	const BOOL bResult = m_oCitiesData.SelectAll(m_oCitiesArray);
 	if (!bResult)
 	{
@@ -179,34 +166,39 @@ bool CCitiesDocument::RefreshData()
 	}
 
 	// create index by id
-	for (INT_PTR i = 0; i < m_oCitiesArray.GetCount(); i++)
-	{
-		CITIES* pCity = m_oCitiesArray.GetAt(i);
-		m_oCitiesIndexesOfIds.SetAt(pCity->lID, i);
-	}
-	
+	BuildCitiesIndexMap();
+
 	return TRUE;
 }
 
-bool CCitiesDocument::EditCity(CITIES& recCity)
+BOOL CCitiesDocument::EditCity(CITIES& recCity)
 {
-	const BOOL bResult = m_oCitiesData.UpdateWhereId(recCity.lID, recCity);
+	const BOOL bResult = m_oCitiesData.UpdateWhereID(recCity.lID, recCity);
 
 	if (!bResult)
 	{
-		return false;
+		TRACE(_T("Edit city in document failed. City id - %d"), recCity.lID);
+		return FALSE;
 	}
 
-	CITIES* pCity = GetCityFromRepositoryById(recCity.lID);
+	CITIES* pCity = GetCityFromRepositoryByID(recCity.lID);
+
+	if (!pCity)
+	{
+		TRACE(_T("Finding city in document failed. City id - %d"), recCity.lID);
+		return FALSE;
+	}
+
 	*pCity = recCity;
 
-	CCitiesUpdateObject oCitiesUpdateObject = reinterpret_cast<DWORD_PTR>(pCity);
+	CCitiesUpdateObject oCitiesUpdateObject(reinterpret_cast<DWORD_PTR>(pCity));
 
 	OnUpdateAllViews(OperationsUpdate, &oCitiesUpdateObject);
-	return true;
+
+	return TRUE;
 }
 
-bool CCitiesDocument::AddCity(CITIES& recCity)
+BOOL CCitiesDocument::AddCity(CITIES& recCity)
 {
 	recCity.lID = -1;
 	const BOOL bResult = m_oCitiesData.InsertCity(recCity);
@@ -214,33 +206,38 @@ bool CCitiesDocument::AddCity(CITIES& recCity)
 	if (!bResult || recCity.lID == -1)
 	{
 		TRACE(_T("Insert in document failed. City id - %d"), recCity.lID);
-		return false;
+		return FALSE;
 	}
 
 	const INT_PTR nCityIndex = AddCityToRepository(recCity);
 	CITIES* pCity = m_oCitiesArray.GetAt(nCityIndex);
-	
-	CCitiesUpdateObject oCitiesUpdateObject = reinterpret_cast<DWORD_PTR>(pCity);
-	
+
+	CCitiesUpdateObject oCitiesUpdateObject(reinterpret_cast<DWORD_PTR>(pCity));
+
 	OnUpdateAllViews(OperationsCreate, &oCitiesUpdateObject);
-	return true;
+	return TRUE;
 }
 
-bool CCitiesDocument::DeleteCity(const CITIES& recCity)
+BOOL CCitiesDocument::DeleteCity(const CITIES& recCity)
 {
-	const BOOL bResult = m_oCitiesData.DeleteWhereId(recCity.lID);
+	const BOOL bResult = m_oCitiesData.DeleteWhereID(recCity.lID);
 
 	if (!bResult)
 	{
-		return false;
+		return FALSE;
 	}
 
-	const DWORD_PTR dwDeletedCityPointer = RemoveCityFromRepositoryById(recCity.lID);
-	
-	CCitiesUpdateObject oCitiesUpdateObject = dwDeletedCityPointer;
+	const DWORD_PTR dwDeletedCityAddress = RemoveCityFromRepositoryByID(recCity.lID);
+
+	if (dwDeletedCityAddress == -1)
+	{
+		TRACE(_T("Deletion from repository returned error. City id: %d"), recCity.lID);
+	}
+
+	CCitiesUpdateObject oCitiesUpdateObject(dwDeletedCityAddress);
 
 	OnUpdateAllViews(OperationsDelete, &oCitiesUpdateObject);
-	return true;
+	return TRUE;
 }
 
 void CCitiesDocument::CleanRepository()
@@ -252,7 +249,7 @@ void CCitiesDocument::CleanRepository()
 void CCitiesDocument::OnUpdateAllViews(LPARAM lHint, CObject* pHint)
 {
 	SetModifiedFlag();
-	UpdateAllViews(nullptr, lHint, pHint);
+	UpdateAllViews(NULL, lHint, pHint);
 }
 
 INT_PTR CCitiesDocument::AddCityToRepository(const CITIES& recCity)
@@ -262,38 +259,66 @@ INT_PTR CCitiesDocument::AddCityToRepository(const CITIES& recCity)
 	return nIndexOfCity;
 }
 
-DWORD_PTR CCitiesDocument::RemoveCityFromRepositoryById(const long lId)
+DWORD_PTR CCitiesDocument::RemoveCityFromRepositoryByID(const long lID)
 {
-	long lIndex;
-	m_oCitiesIndexesOfIds.Lookup(lId, lIndex);
+	long lIndex = -1;
+	m_oCitiesIndexesOfIds.Lookup(lID, lIndex);
+
+	if (lIndex < 0 || lIndex >= m_oCitiesArray.GetCount())
+	{
+		TRACE(_T("City not found in document, but claimed. City id - %d"), lID);
+		return NULL;
+	}
 
 	CITIES* pCity = m_oCitiesArray.GetAt(lIndex);
-	const DWORD_PTR dwDeletedCityPointer = reinterpret_cast<DWORD_PTR>(pCity);
 
+	if (!pCity)
+	{
+		TRACE(_T("City not found in document, but exists in index map. City id - %d"), lID);
+		return NULL;
+	}
+
+	const DWORD_PTR dwDeletedCityAddress = reinterpret_cast<DWORD_PTR>(pCity);
 	delete pCity;
 	m_oCitiesArray.RemoveAt(lIndex);
 
 	//TODO: optimize to replace only needed indexes later
+	BuildCitiesIndexMap();
+
+	return dwDeletedCityAddress;
+}
+
+CITIES* CCitiesDocument::GetCityFromRepositoryByID(const long lID)
+{
+	long lIndex = -1;
+
+	m_oCitiesIndexesOfIds.Lookup(lID, lIndex);
+
+	if (lIndex < 0 || lIndex >= m_oCitiesArray.GetCount())
+	{
+		TRACE(_T("City not found in document, but claimed. City id - %d"), lID);
+		return NULL;
+	}
+
+	CITIES* pCity = m_oCitiesArray.GetAt(lIndex);
+
+	if (!pCity)
+	{
+		TRACE(_T("City not found in document, but exists in index map. City id - %d"), lID);
+		return NULL;
+	}
+
+	return pCity;
+}
+
+void CCitiesDocument::BuildCitiesIndexMap()
+{
 	m_oCitiesIndexesOfIds.RemoveAll();
 	for (INT_PTR i = 0; i < m_oCitiesArray.GetCount(); i++)
 	{
 		CITIES* pCurrentCity = m_oCitiesArray.GetAt(i);
 		m_oCitiesIndexesOfIds.SetAt(pCurrentCity->lID, i);
 	}
-
-	return dwDeletedCityPointer;
-}
-
-CITIES* CCitiesDocument::GetCityFromRepositoryById(long lId)
-{
-	long lIndex;
-	
-	if (!m_oCitiesIndexesOfIds.Lookup(lId, lIndex))
-	{
-		return nullptr;
-	}
-	
-	return m_oCitiesArray.GetAt(lIndex);
 }
 
 void CCitiesDocument::AssertValid() const
@@ -305,19 +330,3 @@ void CCitiesDocument::Dump(CDumpContext& dc) const
 {
 	CDocument::Dump(dc);
 }
-
-/////////////////////////////////////////////////////////////
-/// CCitiesUpdateObject
-
-#pragma region CCitiesUpdateObject
-DWORD_PTR CCitiesDocument::CCitiesUpdateObject::GetUpdateCityData() const
-{
-	return this->m_dwCityData;
-}
-
-CCitiesDocument::CCitiesUpdateObject& CCitiesDocument::CCitiesUpdateObject::operator=(DWORD_PTR dwCityData)
-{
-	m_dwCityData = dwCityData;
-	return *this;
-}
-#pragma endregion CCitiesUpdateObject

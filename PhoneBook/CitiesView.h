@@ -8,21 +8,21 @@
 class CCitiesView : public CListView
 {
 
-// Macros
-// ----------------
+	// Macros
+	// ----------------
 
 	DECLARE_DYNCREATE(CCitiesView)
 	DECLARE_MESSAGE_MAP()
-	
-// Constructor / Destructor
-// ----------------
+
+	// Constructor / Destructor
+	// ----------------
 
 protected:
 	CCitiesView();
 	virtual ~CCitiesView();
 
-// Overrides
-// ----------------
+	// Overrides
+	// ----------------
 
 public:
 	BOOL PreCreateWindow(CREATESTRUCT& cs) override;
@@ -35,36 +35,36 @@ public:
 	/// <param name="lHint">...</param>
 	/// <param name="pHint">Обект с информация за промените</param>
 	void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
-	
+
 #ifdef _DEBUG
 	void AssertValid() const override;
 #ifndef _WIN32_WCE
 	void Dump(CDumpContext& dc) const override;
 #endif
 #endif
-	
-// Methods
-// ----------------
+
+	// Methods
+	// ----------------
 private:
 	/// <summary>(Handler) При избор на елемент от лист контролата отваря диалог за редакция</summary>
 	afx_msg void OnLvnItemActivate(NMHDR* pNMHDR = nullptr, LRESULT* pResult = nullptr);
 
 	// Опции на контекстно меню върху ред от лист контролата
-	#pragma region ContextMenuOptions
+#pragma region ContextMenuOptions
 
-	/// <summary>Отваря диалог за изтриване на запис</summary>
+/// <summary>Отваря диалог за изтриване на запис</summary>
 	void OnContextMenuBtnDelete();
 
 	/// <summary>Отваря диалог за добавяне на запис</summary>
 	void OnContextMenuBtnInsert();
-	
+
 	/// <summary>Отваря диалог за редактиране на запис</summary>
 	void OnContextMenuBtnUpdate();
-	
-	/// <summary>Отваря диалог за опресняване на данните</summary>
+
+	/// <summary> Опресняване на данните</summary>
 	void OnContextMenuBtnRefresh();
-	
-	#pragma endregion ContextMenuOptions
+
+#pragma endregion ContextMenuOptions
 
 	/// <summary>(Handler) При отваряне на контекстно меню в лист контролата. Визуализира меню с CRUD операции и Refresh</summary>
 	/// <param name="pWnd">Указател към прозорец с осъщественото действие</param>
@@ -84,18 +84,19 @@ private:
 	/// <returns>bool: при OK - true, при CANCEL - false</returns>
 	bool PromptErrorOn(const INT nError, const TCHAR* pszMessage);
 
-	INT GetCityIndexInListCtrlByItemData(DWORD_PTR dwPtr) const;
-	
+	/// <summary> Намира индекс на град от лист контролата по атрибута за данни </summary>
+	/// <returns>INT: индекса от ListCtrl</returns>
+	INT GetCityIndexInListCtrlByItemData(DWORD_PTR dwData) const;
+
 	void UpdateOnOperationCreate(const DWORD_PTR dwCityItemData);
 	void UpdateOnOperationUpdate(const DWORD_PTR dwCityItemData);
 	void UpdateOnOperationDelete(const DWORD_PTR dwCityItemData);
 	void ClearRowsData();
 
 
-// Members
-// ----------------
+	// Members
+	// ----------------
 private:
-	CITIES m_recCity;
 };
 
 

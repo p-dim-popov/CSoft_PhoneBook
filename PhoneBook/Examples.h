@@ -244,7 +244,7 @@ void CRUDExample()
 	CCitiesMapByID oCitiesMappedByID;
 
 	// Ако "случайното" число е четно, се добавя Dummy запис
-	srand(time(nullptr));
+	//srand(time(nullptr));
 	if (rand() % 2 == 0)
 	{
 		const INT_PTR nCitiesTableRecordsCount = SelectAllExample(DO_NOT_PRINT);
