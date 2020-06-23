@@ -1,4 +1,7 @@
 ﻿#pragma once
+#include "AutoDeleteTypedPtrArray.h"
+#include "AutoDeleteMap.h"
+
 
 #define CITIES_NAME_LENGTH 32
 #define CITIES_REGION_LENGTH 32
@@ -121,83 +124,6 @@ struct PHONE_TYPES
 		SecureZeroMemory(this, sizeof(*this));
 	}
 };
-
-/////////////////////////////////////////////////////////////////////////////
-// CAutoDeleteTypedPtrArray
-
-/// <summary>Клас, наследяващ CTypedPtrArray и имплементиращ Garbage Collector чрез метод DeleteAll</summary>
-template<typename T>
-class CAutoDeleteTypedPtrArray : public CTypedPtrArray<CPtrArray, T>
-{
-
-// Constructor / Destructor
-// ----------------
-public:
-	CAutoDeleteTypedPtrArray() {}
-	CAutoDeleteTypedPtrArray(CAutoDeleteTypedPtrArray& oAutoDeleteTypedPtrArray)
-	{
-		for (INT_PTR i = 0; i < oAutoDeleteTypedPtrArray.GetCount(); i++)
-		{
-			this->Add(oAutoDeleteTypedPtrArray.GetAt(i));
-		}
-	}
-	~CAutoDeleteTypedPtrArray()
-	{
-		DeleteAll();
-	}
-
-// Methods
-// ----------------
-public:
-	/// <summary>Освобождава динамичната памет и премахва всички елементи от масива</summary>
-	/// <returns>void</returns>
-	void DeleteAll()
-	{
-		for (INT_PTR i = 0; i < this->GetCount(); i++)
-		{
-			delete this->GetAt(i);
-			
-		}
-		this->RemoveAll();
-	}
-};
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CAutoDeleteMap
-
-/// <summary>Клас, наследяващ CMap и имплементиращ Garbage Collector чрез метод DeleteAll</summary>
-template<typename KEY, typename VALUE>
-class CAutoDeleteMap : public CMap<KEY, KEY, VALUE, VALUE>
-{
-
-	// Constructor / Destructor
-	// ----------------
-public:
-	CAutoDeleteMap() {}
-	~CAutoDeleteMap()
-	{
-		this->DeleteAll();
-	}
-
-	// Methods
-	// ----------------
-public:
-	/// <summary>Освобождава динамичната памет и премахва всички елементи от масива</summary>
-	/// <returns>void</returns>
-	void DeleteAll()
-	{
-		typename CAutoDeleteMap<KEY, VALUE>::CPair* pCurrentCity = this->PGetFirstAssoc();
-		for (INT_PTR i = 0; i < this->GetCount(); i++)
-		{
-			delete pCurrentCity->value;
-			pCurrentCity = this->PGetNextAssoc(pCurrentCity);
-		}
-
-		this->RemoveAll();
-	}
-};
-
 
 typedef CAutoDeleteTypedPtrArray<CITIES*> CCitiesArray;
 typedef CAutoDeleteTypedPtrArray<PERSONS*> CPersonsArray;

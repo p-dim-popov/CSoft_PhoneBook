@@ -22,6 +22,11 @@
 // CCitiesView
 
 IMPLEMENT_DYNCREATE(CCitiesView, CListView)
+// Връзване на флаг съобщения с методи
+BEGIN_MESSAGE_MAP(CCitiesView, CListView)
+	ON_NOTIFY_REFLECT(LVN_ITEMACTIVATE, &CCitiesView::OnLvnItemActivate)
+	ON_WM_CONTEXTMENU()
+END_MESSAGE_MAP()
 
 // Constructor / Destructor
 // ----------------
@@ -37,6 +42,11 @@ CCitiesView::~CCitiesView()
 
 // Overrides
 // ----------------
+
+BOOL CCitiesView::PreCreateWindow(CREATESTRUCT& cs) {
+	cs.style |= LVS_REPORT;
+	return CListView::PreCreateWindow(cs);
+}
 
 void CCitiesView::OnInitialUpdate()
 {
@@ -69,13 +79,13 @@ void CCitiesView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 		switch (lHint)
 		{
-		case CCitiesDocument::OperationsCreate:
+		case OperationsCreate:
 			UpdateOnOperationCreate(dwCityItemData);
 			break;
-		case CCitiesDocument::OperationsUpdate:
+		case OperationsUpdate:
 			UpdateOnOperationUpdate(dwCityItemData);
 			break;
-		case CCitiesDocument::OperationsDelete:
+		case OperationsDelete:
 			UpdateOnOperationDelete(dwCityItemData);
 			break;
 		default:
@@ -84,75 +94,6 @@ void CCitiesView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	}
 }
 
-void CCitiesView::UpdateOnOperationCreate(const DWORD_PTR dwCityItemData)
-{
-	CListCtrl& oListCtrl = GetListCtrl();
-	CITIES* pCity = reinterpret_cast<CITIES*>(dwCityItemData);
-
-	// Вмъкване на редове
-	const INT nInsertIndex = oListCtrl.InsertItem(oListCtrl.GetItemCount(), pCity->szName);
-	oListCtrl.SetItemText(nInsertIndex, CITY_REGION_COLUMN, pCity->szRegion);
-	oListCtrl.SetItemData(nInsertIndex, dwCityItemData);
-}
-
-void CCitiesView::UpdateOnOperationUpdate(const DWORD_PTR dwCityItemData)
-{
-	CListCtrl& oListCtrl = GetListCtrl();
-	CITIES* pCity = reinterpret_cast<CITIES*>(dwCityItemData);
-
-	pCity = reinterpret_cast<CITIES*>(dwCityItemData);
-	const INT nIndexInListCtrl = GetCityIndexInListCtrlByItemData(dwCityItemData);
-
-	oListCtrl.SetItemText(nIndexInListCtrl, CITY_NAME_COLUMN, pCity->szName);
-	oListCtrl.SetItemText(nIndexInListCtrl, CITY_REGION_COLUMN, pCity->szRegion);
-}
-
-void CCitiesView::UpdateOnOperationDelete(const DWORD_PTR dwCityItemData)
-{
-	const INT nIndexInListCtrl = GetCityIndexInListCtrlByItemData(dwCityItemData);
-	GetListCtrl().DeleteItem(nIndexInListCtrl);
-}
-
-void CCitiesView::ClearRowsData()
-{
-	CListCtrl& oListCtrl = GetListCtrl();
-
-	const int nItemsCount = oListCtrl.GetItemCount();
-	if (nItemsCount > 0)
-	{
-		oListCtrl.SetRedraw(FALSE);
-		oListCtrl.DeleteAllItems();
-		oListCtrl.SetRedraw(TRUE);
-	}
-}
-
-BOOL CCitiesView::PreCreateWindow(CREATESTRUCT& cs) {
-	cs.style |= LVS_REPORT;
-	return CListView::PreCreateWindow(cs);
-}
-
-// Връзване на флаг съобщения с методи
-BEGIN_MESSAGE_MAP(CCitiesView, CListView)
-	ON_NOTIFY_REFLECT(LVN_ITEMACTIVATE, &CCitiesView::OnLvnItemActivate)
-	ON_WM_CONTEXTMENU()
-END_MESSAGE_MAP()
-
-// CCitiesView diagnostics
-
-#ifdef _DEBUG
-void CCitiesView::AssertValid() const
-{
-	CListView::AssertValid();
-}
-
-#ifndef _WIN32_WCE
-void CCitiesView::Dump(CDumpContext& dc) const
-{
-	CListView::Dump(dc);
-}
-#endif
-#endif //_DEBUG
-
 // Methods
 // ----------------
 
@@ -160,28 +101,6 @@ CCitiesDocument* CCitiesView::GetDocument() const
 {
 	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CCitiesDocument)));
 	return dynamic_cast<CCitiesDocument*>(m_pDocument);
-}
-
-void CCitiesView::LoadRowsData()
-{
-	CListCtrl& oListCtrl = GetListCtrl();
-
-	// Документ - за работа с данните
-	CCitiesDocument* pCitiesDocument = GetDocument();
-
-	// Данни - CITIES
-	CCitiesArray& oCitiesArray = pCitiesDocument->GetAllCities();
-
-	// Зареждане на всички градове в списък в лист контролата
-	for (INT_PTR i = 0; i < oCitiesArray.GetCount(); i++)
-	{
-		CITIES* pCity = oCitiesArray.GetAt(i);
-
-		// Вмъкване на редове
-		const INT nInsertIndex = oListCtrl.InsertItem(i, pCity->szName);
-		oListCtrl.SetItemText(nInsertIndex, CITY_REGION_COLUMN, pCity->szRegion);
-		oListCtrl.SetItemData(nInsertIndex, reinterpret_cast<DWORD_PTR>(pCity));
-	}
 }
 
 // CCitiesView message handlers
@@ -200,20 +119,18 @@ void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 
 	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
 
-	CCitiesDialog oCitiesDialog(recCity, CCitiesDocument::OperationsRead);
+	CCitiesDialog oCitiesDialog(recCity, OperationsRead);
 
 	oCitiesDialog.DoModal();
 
-	if (!pResult)
+	if (pResult)
 	{
-		return;
+		*pResult = 0;
 	}
-
-	*pResult = 0;
 }
 
 // Функции за избор при контекстно меню
-
+#pragma region ContextMenuOptions
 void CCitiesView::OnContextMenuBtnDelete()
 {
 	CCitiesDocument* pCitiesDocument = GetDocument();
@@ -226,25 +143,25 @@ void CCitiesView::OnContextMenuBtnDelete()
 	}
 
 	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
-	CString strCityName;
-	strCityName.Format(_T("Are you sure that you want to delete city %s?"), recCity.szName);
-	
-	const int nResult = MessageBox(strCityName, _T("Are you sure?"), MB_ICONINFORMATION | MB_OKCANCEL);
+	CString strAreYouSurePrompt;
+	strAreYouSurePrompt.Format(_T("Are you sure that you want to delete city %s?"), recCity.szName);
+
+	const int nResult = MessageBox(strAreYouSurePrompt, _T("Are you sure?"), MB_ICONINFORMATION | MB_OKCANCEL);
 
 	if (nResult != IDOK)
 	{
 		return;
 	}
-	
+
 	const bool bIsSuccessful = pCitiesDocument->DeleteCity(recCity);
 
 	if (!bIsSuccessful)
 	{
-		PromptErrorOn(
-			CITIES_DELETE_ERROR,
-			_T("Съжаляваме за неудобството, но възникна грешка. \n\
+		MessageBox(_T("Съжаляваме за неудобството, но възникна грешка. \n\
 Възможна причина: проблем с връзката към базата данни (пр.: липса на достъп до Интернет). \n\
-Ако смятате, че проблемът не е от вас, може да опитате отново."));
+Ако смятате, че проблемът не е от вас, може да опитате отново."),
+_T("Информация"),
+MB_ICONINFORMATION | MB_OK);
 	}
 }
 
@@ -252,7 +169,7 @@ void CCitiesView::OnContextMenuBtnInsert()
 {
 	CITIES recCity = CITIES();
 	CCitiesDocument* pCitiesDocument = GetDocument();
-	CCitiesDialog oCitiesDialog(recCity, CCitiesDocument::OperationsCreate);
+	CCitiesDialog oCitiesDialog(recCity, OperationsCreate);
 
 	if (oCitiesDialog.DoModal() != IDOK)
 	{
@@ -263,17 +180,9 @@ void CCitiesView::OnContextMenuBtnInsert()
 
 	if (!bIsSuccessful)
 	{
-		const bool bShouldRetry = PromptErrorOn(
-			CITIES_CREATE_ERROR,
-			_T("Съжаляваме за неудобството, но възникна грешка. \n\
+		MessageBox(_T("Съжаляваме за неудобството, но възникна грешка. \n\
 Възможна причина: проблем с връзката към базата данни (пр.: липса на достъп до Интернет). \n\
-Ако смятате, че проблемът не е от вас или е отстранен, може да опитате отново."));
-
-		if (bShouldRetry)
-		{
-			//return AddCity(recCity);
-			//TODO: implement
-		}
+Ако смятате, че проблемът не е от вас или е отстранен, може да опитате отново."), _T("Информация"), MB_ICONINFORMATION | MB_OK);
 	}
 }
 
@@ -290,31 +199,24 @@ void CCitiesView::OnContextMenuBtnUpdate()
 
 	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
 
-	CCitiesDialog oCitiesUpdateDialog(recCity, CCitiesDocument::OperationsUpdate);
+	CCitiesDialog oCitiesUpdateDialog(recCity, OperationsUpdate);
 
 	if (oCitiesUpdateDialog.DoModal() != IDOK)
 	{
 		return;
 	}
 
-	const bool bIsSuccessful = pCitiesDocument->EditCity(recCity);
+	const BOOL bIsSuccessful = pCitiesDocument->EditCity(recCity);
 
 	if (!bIsSuccessful)
 	{
-		const bool bShouldRetry = PromptErrorOn(
-			CITIES_UPDATE_ERROR,
-			_T("Възникна грешка. \n\
+		MessageBox(_T("Възникна грешка. \n\
 Възможна причина: записът вече е обновен преди настъпване на настоящите промени. \n\
 Моля обновете вашите данни и опитайте да направите редакциите отново. \n\
-Ако сте сигурни, че това не е проблемът, може да опитате отново."));
-
-		if (bShouldRetry)
-		{
-			//return EditCity(recCity);
-			//TODO: implement
-		}
+Ако сте сигурни, че това не е проблемът, може да опитате отново."),
+_T("Информация"),
+MB_ICONINFORMATION | MB_OK);
 	}
-	//TODO: msg in view err only
 }
 
 void CCitiesView::OnContextMenuBtnRefresh()
@@ -326,6 +228,7 @@ void CCitiesView::OnContextMenuBtnRefresh()
 	ClearRowsData();
 	LoadRowsData();
 }
+#pragma endregion ContextMenuOptions
 
 void CCitiesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos)
 {
@@ -372,21 +275,25 @@ void CCitiesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos)
 	}
 }
 
-bool CCitiesView::PromptErrorOn(const INT nError, const TCHAR* pszMessage)
+void CCitiesView::LoadRowsData()
 {
-	//TODO: may need to handle different errors diferently -> nError
+	CListCtrl& oListCtrl = GetListCtrl();
 
-	const int nReply = MessageBox(pszMessage, _T("Информация"), MB_ICONINFORMATION | MB_RETRYCANCEL);
+	// Документ - за работа с данните
+	CCitiesDocument* pCitiesDocument = GetDocument();
 
-	switch (nReply)
+	// Данни - CITIES
+	CCitiesArray& oCitiesArray = pCitiesDocument->GetAllCities();
+
+	// Зареждане на всички градове в списък в лист контролата
+	for (INT_PTR i = 0; i < oCitiesArray.GetCount(); i++)
 	{
-	case IDCANCEL:
-		return false;
-	case IDRETRY:
-		return true;
-	default:
-		MessageBox(_T("Не бяха извършени промени!"), _T("Информация"), MB_ICONWARNING);
-		return false;
+		CITIES* pCity = oCitiesArray.GetAt(i);
+
+		// Вмъкване на редове
+		const INT nInsertIndex = oListCtrl.InsertItem(i, pCity->szName);
+		oListCtrl.SetItemText(nInsertIndex, CITY_REGION_COLUMN, pCity->szRegion);
+		oListCtrl.SetItemData(nInsertIndex, reinterpret_cast<DWORD_PTR>(pCity));
 	}
 }
 
@@ -406,3 +313,63 @@ INT CCitiesView::GetCityIndexInListCtrlByItemData(const DWORD_PTR dwData) const
 
 	return nIndex;
 }
+
+#pragma region OnUpdateCases
+void CCitiesView::UpdateOnOperationCreate(const DWORD_PTR dwCityItemData)
+{
+	CListCtrl& oListCtrl = GetListCtrl();
+	CITIES* pCity = reinterpret_cast<CITIES*>(dwCityItemData);
+
+	// Вмъкване на редове
+	const INT nInsertIndex = oListCtrl.InsertItem(oListCtrl.GetItemCount(), pCity->szName);
+	oListCtrl.SetItemText(nInsertIndex, CITY_REGION_COLUMN, pCity->szRegion);
+	oListCtrl.SetItemData(nInsertIndex, dwCityItemData);
+}
+
+void CCitiesView::UpdateOnOperationUpdate(const DWORD_PTR dwCityItemData)
+{
+	CListCtrl& oListCtrl = GetListCtrl();
+	CITIES* pCity = reinterpret_cast<CITIES*>(dwCityItemData);
+
+	pCity = reinterpret_cast<CITIES*>(dwCityItemData);
+	const INT nIndexInListCtrl = GetCityIndexInListCtrlByItemData(dwCityItemData);
+
+	oListCtrl.SetItemText(nIndexInListCtrl, CITY_NAME_COLUMN, pCity->szName);
+	oListCtrl.SetItemText(nIndexInListCtrl, CITY_REGION_COLUMN, pCity->szRegion);
+}
+
+void CCitiesView::UpdateOnOperationDelete(const DWORD_PTR dwCityItemData)
+{
+	const INT nIndexInListCtrl = GetCityIndexInListCtrlByItemData(dwCityItemData);
+	GetListCtrl().DeleteItem(nIndexInListCtrl);
+}
+#pragma endregion OnUpdateCases
+
+void CCitiesView::ClearRowsData()
+{
+	CListCtrl& oListCtrl = GetListCtrl();
+
+	const int nItemsCount = oListCtrl.GetItemCount();
+	if (nItemsCount > 0)
+	{
+		oListCtrl.SetRedraw(FALSE);
+		oListCtrl.DeleteAllItems();
+		oListCtrl.SetRedraw(TRUE);
+	}
+}
+
+
+// CCitiesView diagnostics
+#ifdef _DEBUG
+void CCitiesView::AssertValid() const
+{
+	CListView::AssertValid();
+}
+
+#ifndef _WIN32_WCE
+void CCitiesView::Dump(CDumpContext& dc) const
+{
+	CListView::Dump(dc);
+}
+#endif
+#endif //_DEBUG

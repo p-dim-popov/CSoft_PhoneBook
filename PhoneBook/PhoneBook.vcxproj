@@ -183,6 +183,8 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AutoDeleteTypedPtrArray.h" />
+    <ClInclude Include="AutoDeleteMap.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="CitiesData.h" />
     <ClInclude Include="CitiesDialog.h" />
@@ -223,6 +225,8 @@
     <ResourceCompile Include="PhoneBook.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="AutoDeleteMap.inl" />
+    <None Include="AutoDeleteTypedPtrArray.inl" />
     <None Include="res\PhoneBook.rc2" />
   </ItemGroup>
   <ItemGroup>

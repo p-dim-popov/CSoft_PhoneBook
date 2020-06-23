@@ -66,6 +66,12 @@
     <ClInclude Include="CitiesDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AutoDeleteTypedPtrArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AutoDeleteMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PhoneBook.cpp">
@@ -110,6 +116,12 @@
   <ItemGroup>
     <None Include="res\PhoneBook.rc2">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="AutoDeleteTypedPtrArray.inl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="AutoDeleteMap.inl">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

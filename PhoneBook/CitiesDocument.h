@@ -2,6 +2,14 @@
 
 #include "CitiesData.h"
 
+enum Operations
+{
+	OperationsCreate = 1,
+	OperationsRead = 2,
+	OperationsUpdate = 3,
+	OperationsDelete = 4
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CCitiesDocument
 
@@ -88,18 +96,7 @@ private:
 	CITIES* GetCityFromRepositoryByID(const long lID);
 
 	/// <summary> Изчиства индексирането в m_oCitiesIndexesOfIds и го създава наново </summary>
-	void BuildCitiesIndexMap();
-
-	// Enum
-	// ----------------
-public:
-	enum Operations
-	{
-		OperationsCreate = 1,
-		OperationsRead = 2,
-		OperationsUpdate = 3,
-		OperationsDelete = 4
-	};
+	void InitCitiesIndexMap();
 
 	// Class
 	// ---------------

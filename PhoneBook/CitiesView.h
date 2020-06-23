@@ -36,16 +36,13 @@ public:
 	/// <param name="pHint">Обект с информация за промените</param>
 	void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
-#ifdef _DEBUG
-	void AssertValid() const override;
-#ifndef _WIN32_WCE
-	void Dump(CDumpContext& dc) const override;
-#endif
-#endif
-
 	// Methods
 	// ----------------
 private:
+	/// <summary>Достъп до документа</summary>
+	/// <returns>Указател към документа - CCitiesDocument
+	CCitiesDocument* GetDocument() const;
+
 	/// <summary>(Handler) При избор на елемент от лист контролата отваря диалог за редакция</summary>
 	afx_msg void OnLvnItemActivate(NMHDR* pNMHDR = nullptr, LRESULT* pResult = nullptr);
 
@@ -74,25 +71,31 @@ private:
 	/// <summary>Обновяване на данните в лист контрола</summary>
 	void LoadRowsData();
 
-	/// <summary>Достъп до документа</summary>
-	/// <returns>Указател към документа - CCitiesDocument
-	CCitiesDocument* GetDocument() const;
-
-	/// <summary>Изкарва MessageBox с подаденото съобщение и грешка</summary>
-	/// <param name="nError">Грешка, която се е случила</param>
-	/// <param name="pszMessage">Съобщение, което ще се изведе</param>
-	/// <returns>bool: при OK - true, при CANCEL - false</returns>
-	bool PromptErrorOn(const INT nError, const TCHAR* pszMessage);
-
 	/// <summary> Намира индекс на град от лист контролата по атрибута за данни </summary>
 	/// <returns>INT: индекса от ListCtrl</returns>
 	INT GetCityIndexInListCtrlByItemData(DWORD_PTR dwData) const;
 
+#pragma region OnUpdateCases
+	/// <summary>Вмъква нов град в ListCtrl при сигнал за създаване</summary>
+	/// <param name="dwCityItemData"> входящата информация от документа </param>
 	void UpdateOnOperationCreate(const DWORD_PTR dwCityItemData);
+	/// <summary>Ъпдейтва град от ListCtrl при сигнал за ъпдейт</summary>
+	/// <param name="dwCityItemData">входящата информация от документа</param>
 	void UpdateOnOperationUpdate(const DWORD_PTR dwCityItemData);
+	/// <summary>Изтрива град от ListCtrl при сигнал за изтриване</summary>
+	/// <param name="dwCityItemData">входящата информация от документа</param>
 	void UpdateOnOperationDelete(const DWORD_PTR dwCityItemData);
+#pragma endregion OnUpdateCases
+
+	/// <summary> Зачиства всички редове от List контролата</summary>
 	void ClearRowsData();
 
+#ifdef _DEBUG
+	void AssertValid() const override;
+#ifndef _WIN32_WCE
+	void Dump(CDumpContext& dc) const override;
+#endif
+#endif
 
 	// Members
 	// ----------------

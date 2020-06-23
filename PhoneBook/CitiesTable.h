@@ -4,9 +4,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CCitiesTableAccessor
 
-/// <summary>
-/// Аксесор за таблица CITIES oт CSOFT_PHONEBOOK
-/// </summary>
+/// <summary>Аксесор за таблица CITIES oт CSOFT_PHONEBOOK</summary>
 class CCitiesTableAccessor
 {
 	
@@ -20,11 +18,11 @@ public:
 // ----------------
 protected:
 	BEGIN_ACCESSOR_MAP( CCitiesTableAccessor, 2 )
-		BEGIN_ACCESSOR( 0, true )
+		BEGIN_ACCESSOR( 0, TRUE )
 			COLUMN_ENTRY( 1, m_recCity.lID)
 		END_ACCESSOR()
 
-		BEGIN_ACCESSOR( 1, true )
+		BEGIN_ACCESSOR( 1, TRUE )
 			COLUMN_ENTRY( 2, m_recCity.lUpdateCounter)
 			COLUMN_ENTRY( 3, m_recCity.szName)
 			COLUMN_ENTRY( 4, m_recCity.szRegion)
@@ -72,7 +70,6 @@ public:
 	
 	/// <summary>Функция за добавяне на запис в базата данни</summary>
 	/// <param name="recCity">Нов град, който ще се добавя</param>
-	/// <param name="lResultingId"> Id колона на нововписания запис </param>
 	/// <returns>BOOL - TRUE ако е успешно и FALSE ако е неуспешно</returns>
 	BOOL Insert(CITIES& recCity);
 	
@@ -109,7 +106,7 @@ private:
 	/// <param name="strQuery">Заявка за изпълнение към БД</param>
 	/// <param name="pUpdateDBPropSet">Указател към сет от параметри за БД</param>
 	/// <returns>HRESULT - Статус за успеваемостта</returns>
-	HRESULT ExecuteCommandGetRequestedRecord(const CString& strQuery, CDBPropSet* pUpdateDBPropSet = nullptr);
+	HRESULT ExecuteCommandSelectWhereId(const long lID, CDBPropSet* pUpdateDBPropSet = NULL, const TCHAR* pszLockType = NULL);
 
 // Members
 // ----------------
