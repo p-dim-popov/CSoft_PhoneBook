@@ -1,7 +1,4 @@
 ﻿#pragma once
-#include "AutoDeleteTypedPtrArray.h"
-#include "AutoDeleteMap.h"
-
 
 #define CITIES_NAME_LENGTH 32
 #define CITIES_REGION_LENGTH 32
@@ -13,8 +10,14 @@
 #define PHONE_NUMBERS_PHONE_LENGTH 32
 #define PHONE_TYPES_TYPE_LENGTH 128
 
+template<typename TYPE>
+struct ICompare
+{
+	virtual BOOL Compare(TYPE&) const = 0;
+};
+
 /// <summary>Структура репрезентираща град от БД - CITIES</summary>
-struct CITIES
+struct CITIES : ICompare<CITIES>
 {
 	/// <summary>Уникален идентификатор за ред</summary>
 	long lID;
@@ -49,22 +52,24 @@ struct CITIES
 	/// <summary> Фунцкия за сравнение на 2 града </summary>
 	/// <param name="recCity"> Град за сравнение </param>
 	/// <returns> 0 ако двата града са идентични по всички параметри </returns>
-	BOOL Compare(CITIES& recCity) const
+	BOOL Compare(CITIES& recCity) const override
 	{
 		return _tcscmp(this->szName, recCity.szName) ||
-			_tcscmp(this->szRegion, recCity.szRegion) || 
+			_tcscmp(this->szRegion, recCity.szRegion) ||
 			(this->lID - recCity.lID) ||
 			(this->lUpdateCounter - recCity.lUpdateCounter);
 	}
-	
+
 	CITIES()
 	{
 		SecureZeroMemory(this, sizeof(*this));
 	}
+
+	~CITIES() {}
 };
 
 /// <summary>Структура репрезентираща абонат от БД - PERSONS</summary>
-struct PERSONS
+struct PERSONS : ICompare<PERSONS>
 {
 	/// <summary>Уникален идентификатор за ред</summary>
 	long lID;
@@ -83,14 +88,42 @@ struct PERSONS
 	/// <summary>Адрес на абонат</summary>
 	TCHAR szAddress[PERSONS_ADDRESS_LENGTH + 1];
 
+	/// <summary> Setter за FirstName </summary>
+	void SetFirstName(const TCHAR* pszFirstName) { _tcscpy_s(this->szFirstName, pszFirstName); }
+
+	/// <summary> Setter за MiddleName </summary>
+	void SetMiddleName(const TCHAR* pszMiddleName) { _tcscpy_s(this->szMiddleName, pszMiddleName); }
+
+	/// <summary> Setter за LastName </summary>
+	void SetLastName(const TCHAR* pszLastName) { _tcscpy_s(this->szLastName, pszLastName); }
+
+	/// <summary> Setter за UCN </summary>
+	void SetUCN(const TCHAR* pszUCN) { _tcscpy_s(this->szUCN, pszUCN); }
+
+	/// <summary> Setter за Address </summary>
+	void SetAddress(const TCHAR* pszAddress) { _tcscpy_s(this->szAddress, pszAddress); }
+
+	BOOL Compare(PERSONS& recPerson) const override
+	{
+		return _tcscmp(this->szFirstName, recPerson.szFirstName) ||
+			_tcscmp(this->szMiddleName, recPerson.szMiddleName) ||
+			_tcscmp(this->szLastName, recPerson.szLastName) ||
+			_tcscmp(this->szAddress, recPerson.szAddress) ||
+			_tcscmp(this->szUCN, recPerson.szUCN) ||
+			(this->lID - recPerson.lID) ||
+			(this->lUpdateCounter - recPerson.lUpdateCounter);
+	}
+
 	PERSONS()
 	{
 		SecureZeroMemory(this, sizeof(*this));
 	}
+
+	~PERSONS() {}
 };
 
 /// <summary>Структура репрезентираща телефонен номер от БД - PHONE_NUMBERS</summary>
-struct PHONE_NUMBERS
+struct PHONE_NUMBERS : ICompare<PHONE_NUMBERS>
 {
 	/// <summary>Уникален идентификатор за ред</summary>
 	long lID;
@@ -103,14 +136,28 @@ struct PHONE_NUMBERS
 	/// <summary>Телефонен номер на абонат</summary>
 	TCHAR szPhone[PHONE_NUMBERS_PHONE_LENGTH + 1];
 
+	/// <summary> Setter за Phone </summary>
+	void SetPhone(const TCHAR* pszPhone) { _tcscpy_s(this->szPhone, pszPhone); }
+
+	BOOL Compare(PHONE_NUMBERS& recPhoneNumber) const override
+	{
+		return _tcscmp(this->szPhone, recPhoneNumber.szPhone) ||
+			(this->lID - recPhoneNumber.lID) ||
+			(this->lPersonId - recPhoneNumber.lPersonId) ||
+			(this->lPhoneTypeId - recPhoneNumber.lPhoneTypeId) ||
+			(this->lUpdateCounter - recPhoneNumber.lUpdateCounter);
+	}
+
 	PHONE_NUMBERS()
 	{
 		SecureZeroMemory(this, sizeof(*this));
 	}
+
+	~PHONE_NUMBERS() {}
 };
 
 /// <summary>Структура репрезентираща тип на телефон от БД - PHONE_TYPES</summary>
-struct PHONE_TYPES
+struct PHONE_TYPES : ICompare<PHONE_TYPES>
 {
 	/// <summary>Уникален идентификатор за ред</summary>
 	long lID;
@@ -119,15 +166,20 @@ struct PHONE_TYPES
 	/// <summary>Тип на телефон</summary>
 	TCHAR szType[PHONE_TYPES_TYPE_LENGTH + 1];
 
+	/// <summary> Setter за Type </summary>
+	void SetType(const TCHAR* pszType) { _tcscpy_s(this->szType, pszType); }
+
+	BOOL Compare(PHONE_TYPES& recPhoneType) const override
+	{
+		return _tcscmp(this->szType, recPhoneType.szType) ||
+			(this->lID - recPhoneType.lID) ||
+			(this->lUpdateCounter - recPhoneType.lUpdateCounter);
+	}
+
 	PHONE_TYPES()
 	{
 		SecureZeroMemory(this, sizeof(*this));
 	}
+
+	~PHONE_TYPES() {}
 };
-
-typedef CAutoDeleteTypedPtrArray<CITIES*> CCitiesArray;
-typedef CAutoDeleteTypedPtrArray<PERSONS*> CPersonsArray;
-typedef CAutoDeleteTypedPtrArray<PHONE_NUMBERS*> CPhoneNumbersArray;
-typedef CAutoDeleteTypedPtrArray<PHONE_TYPES*> CPhoneTypesArray;
-
-typedef CAutoDeleteMap<long, CITIES*> CCitiesMapById;

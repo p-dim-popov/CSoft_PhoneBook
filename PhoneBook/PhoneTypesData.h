@@ -1,43 +1,43 @@
 ﻿#pragma once
-#include "CitiesTable.h"
+#include "PhoneTypesTable.h"
 #include "Data.h"
 
 /////////////////////////////////////////////////////////////////////////////
-// CCitiesData
+// CPhoneTypesData
 
-/// <summary> Клас за бизнес логика на CITIES </summary>
-class CCitiesData : public IData
+/// <summary> Клас за бизнес логика на PHONE_TYPES </summary>
+class CPhoneTypesData : public IData
 {
 	// Constructor / Destructor
 	// ----------------
 public:
-	CCitiesData();
-	~CCitiesData();
+	CPhoneTypesData();
+	~CPhoneTypesData();
 
 	// Methods
 	// ----------------
 public:
 	/// <summary>Изтегля всички записи от бд и ги записва в подадения обект като параметър на функцията</summary>
-	/// <param name="oCitiesArray">Масив, в който ще се добавят всички записи</param>
+	/// <param name="oPhoneTypesArray">Масив, в който ще се добавят всички записи</param>
 	/// <returns>BOOL: при успех - TRUE, при неуспех - FALSE</returns>
-	BOOL SelectAll(CCitiesArray& oCitiesArray);
+	BOOL SelectAll(CPhoneTypesArray& oPhoneTypesArray);
 
 	/// <summary>Изтегля запис по Id от бд и го записва в подадения обект като параметър на функцията</summary>
 	/// <param name="lID">Id на търсения запис</param>
-	/// <param name="recCity">Структура за данни, в която ще се запише информацията</param>
+	/// <param name="recPhoneType">Структура за данни, в която ще се запише информацията</param>
 	/// <returns>BOOL: при успех - TRUE, при неуспех - FALSE</returns>
-	BOOL SelectWhereID(long lID, CITIES& recCity);
+	BOOL SelectWhereID(long lID, PHONE_TYPES& recPhoneType);
 
 	/// <summary>Обновява запис по Id от бд</summary>
 	/// <param name="lID">Id на търсения запис</param>
-	/// <param name="recCity">Структура с обновената информация</param>
+	/// <param name="recPhoneType">Структура с обновената информация</param>
 	/// <returns>BOOL: при успех - TRUE, при неуспех - FALSE</returns>
-	BOOL UpdateWhereID(const long lID, CITIES& recCity);
+	BOOL UpdateWhereID(const long lID, PHONE_TYPES& recPhoneType);
 
 	/// <summary>Добавя запис в бд</summary>
-	/// <param name="recCity">Структура с информация</param>
+	/// <param name="recPhoneType">Структура с информация</param>
 	/// <returns>BOOL: при успех - TRUE, при неуспех - FALSE</returns>
-	BOOL InsertCity(CITIES& recCity);
+	BOOL InsertPhoneType(PHONE_TYPES& recPhoneType);
 
 	/// <summary>Изтрива запис по Id от бд</summary>
 	/// <param name="lID">Id на търсения запис</param>
@@ -48,6 +48,6 @@ public:
 	// ----------------
 private:
 	/// <summary>Поле за достъп до бд</summary>
-	CCitiesTable m_oCitiesTable;
+	CPhoneTypesTable m_oPhoneTypesTable;
 };
 

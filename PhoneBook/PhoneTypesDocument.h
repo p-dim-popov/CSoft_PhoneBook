@@ -1,21 +1,21 @@
 ﻿#pragma once
 
-#include "CitiesData.h"
+#include "PhoneTypesData.h"
 
 /////////////////////////////////////////////////////////////////////////////
-// CCitiesDocument
+// CPhoneTypesDocument
 
-/// <summary>Клас документ на CITIES</summary>
-class CCitiesDocument : public CDocument
+/// <summary>Клас документ на PHONE_TYPES</summary>
+class CPhoneTypesDocument : public CDocument
 {
 
 	// Constructor / Destructor
 	// ----------------
 public:
-	CCitiesDocument();
-	~CCitiesDocument();
+	CPhoneTypesDocument();
+	~CPhoneTypesDocument();
 
-	DECLARE_DYNCREATE(CCitiesDocument)
+	DECLARE_DYNCREATE(CPhoneTypesDocument)
 
 	// Overrides
 	// ----------------
@@ -23,7 +23,7 @@ public:
 private:
 	/// <summary>Събира първоначална информация при инстанциране на нов документ</summary>
 	/// <returns>BOOL: при успех - TRUE, при неуспех (ако не успее да изтегли данните от бд)- FALSE</returns>
-	/// <remarks>Изтегля всички записи от бд и ги записва в полето за данни m_oCitiesArray, като създава индекс за индексите от m_oCitiesArray по Id в m_oCitiesIndexesOfIds</remarks>
+	/// <remarks>Изтегля всички записи от бд и ги записва в полето за данни m_oPhoneTypesArray, като създава индекс за индексите от m_oPhoneTypesArray по Id в m_oPhoneTypesIndexesOfIds</remarks>
 	BOOL OnNewDocument() override;
 
 	void Serialize(CArchive& ar) override;
@@ -32,37 +32,37 @@ private:
 	// ----------------
 
 public:
-	/// <summary>Достъп до поле m_oCitiesArray</summary>
-	/// <returns>Референция към m_oCitiesArray</returns>
-	CCitiesArray& GetAllCities();
+	/// <summary>Достъп до поле m_oPhoneTypesArray</summary>
+	/// <returns>Референция към m_oPhoneTypesArray</returns>
+	CPhoneTypesArray& GetAllPhoneTypes();
 
-	/// <summary>Достъп до запис от m_oCitiesArray</summary>
+	/// <summary>Достъп до запис от m_oPhoneTypesArray</summary>
 	/// <param name="lID">Id на град, който се търси</param>
-	/// <returns>Референция към запис от m_oCitiesArray</returns>
+	/// <returns>Референция към запис от m_oPhoneTypesArray</returns>
 	/// <remarks>Ако записът не е намерен в полето, се търси в бд и ако се намери, документът се обновява</remarks>
-	CITIES& GetCityById(const long lID);
+	PHONE_TYPES& GetPhoneTypeById(const long lID);
 
 	/// <summary>Обновяване на полето за записи</summary>
 	/// <returns>BOOL: при успех - TRUE, при неуспех - FALSE</returns>
 	BOOL RefreshData();
 
 	/// <summary>Обновяване на единичен запис в бд</summary>
-	/// <param name="recCity">Град, с приложените промени</param>
+	/// <param name="recPhoneType">Град, с приложените промени</param>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	BOOL EditCity(CITIES& recCity);
+	BOOL EditPhoneType(PHONE_TYPES& recPhoneType);
 
 	/// <summary>Добавяне на единичен запис в бд</summary>
-	/// <param name="recCity">Град</param>
+	/// <param name="recPhoneType">Град</param>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	BOOL AddCity(CITIES& recCity);
+	BOOL AddPhoneType(PHONE_TYPES& recPhoneType);
 
 	/// <summary>Изтриване на единичен запис от бд</summary>
-	/// <param name="recCity">Id на град</param>
+	/// <param name="recPhoneType">Id на град</param>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	BOOL DeleteCity(const CITIES& recCity);
+	BOOL DeletePhoneType(const PHONE_TYPES& recPhoneType);
 
 private:
-	/// <summary>Изтриване на всички записи от m_oCitiesArray и m_oCitiesIndexesOfIds</summary>
+	/// <summary>Изтриване на всички записи от m_oPhoneTypesArray и m_oPhoneTypesIndexesOfIds</summary>
 	void CleanRepository();
 
 	/// <summary>Започва процедура по обновяване на всички изгледи</summary>
@@ -70,55 +70,55 @@ private:
 	void OnUpdateAllViews(LPARAM lHint, CObject* pHint);
 
 	/// <summary>Добавя запис на град към документа</summary>
-	/// <param name="recCity">Запис на град - CITIES</param>
-	/// <remarks>Записва в полето за данни m_oCitiesArray, като създава индекс за индексите от m_oCitiesArray по Id в m_oCitiesIndexesOfIds</remarks>
-	/// <returns>INT_PTR: индекса на новия град в m_oCitiesArray</returns>
-	INT_PTR AddCityToRepository(const CITIES& recCity);
+	/// <param name="recPhoneType">Запис на град - PHONE_TYPES</param>
+	/// <remarks>Записва в полето за данни m_oPhoneTypesArray, като създава индекс за индексите от m_oPhoneTypesArray по Id в m_oPhoneTypesIndexesOfIds</remarks>
+	/// <returns>INT_PTR: индекса на новия град в m_oPhoneTypesArray</returns>
+	INT_PTR AddPhoneTypeToRepository(const PHONE_TYPES& recPhoneType);
 
 	/// <summary>Премахва запис на град от документа</summary>
 	/// <param name="lID">ID на запис на град</param>
-	/// <remarks>Премахва от запис от полето за данни m_oCitiesArray и m_oCitiesIndexesOfIds</remarks>
+	/// <remarks>Премахва от запис от полето за данни m_oPhoneTypesArray и m_oPhoneTypesIndexesOfIds</remarks>
 	/// <returns> Връща адреса на паметта, която записът е заемал, като число. Ако изтриването е неуспешно: -1 </returns>
-	DWORD_PTR RemoveCityFromRepositoryByID(const long lID);
+	DWORD_PTR RemovePhoneTypeFromRepositoryByID(const long lID);
 
 	/// <summary>Връща указател към запис на град от документа</summary>
 	/// <param name="lID">ID на запис на град</param>
-	/// <param name="pCity"> Указател, в който ще се запише резултатът </param>
+	/// <param name="pPhoneType"> Указател, в който ще се запише резултатът </param>
 	/// <returns> BOOL - TRUE при успешно намиране и FALSE при неуспех </returns>
-	CITIES* GetCityFromRepositoryByID(const long lID);
+	PHONE_TYPES* GetPhoneTypeFromRepositoryByID(const long lID);
 
-	/// <summary> Изчиства индексирането в m_oCitiesIndexesOfIds и го създава наново </summary>
-	void InitCitiesIndexMap();
+	/// <summary> Изчиства индексирането в m_oPhoneTypesIndexesOfIds и го създава наново </summary>
+	void InitPhoneTypesIndexMap();
 
 	// Class
 	// ---------------
 public:
-	class CCitiesUpdateObject : public CObject
+	class CPhoneTypesUpdateObject : public CObject
 	{
 		// Constructor/Destructor
 	public:
-		explicit CCitiesUpdateObject(DWORD_PTR dwCityData)
-			: m_dwCityData(dwCityData) {}
-		~CCitiesUpdateObject() {}
+		explicit CPhoneTypesUpdateObject(DWORD_PTR dwPhoneTypeData)
+			: m_dwPhoneTypeData(dwPhoneTypeData) {}
+		~CPhoneTypesUpdateObject() {}
 
-		//CCitiesUpdateObject& operator=(const CITIES& recCity);
+		//CPhoneTypesUpdateObject& operator=(const PHONE_TYPES& recPhoneType);
 
 	// Methods
 	// ----------------
-		DWORD_PTR GetUpdateCityData() const { return this->m_dwCityData; };
+		DWORD_PTR GetUpdatePhoneTypeData() const { return this->m_dwPhoneTypeData; };
 
 		// Members
 		// ----------------
 	private:
-		DWORD_PTR m_dwCityData;
+		DWORD_PTR m_dwPhoneTypeData;
 	};
 
 	// Members
 	// ----------------
 private:
-	CCitiesData m_oCitiesData;
-	CCitiesArray m_oCitiesArray;
-	CMap<long, long, long, long> m_oCitiesIndexesOfIds;
+	CPhoneTypesData m_oPhoneTypesData;
+	CPhoneTypesArray m_oPhoneTypesArray;
+	CMap<long, long, long, long> m_oPhoneTypesIndexesOfIds;
 
 #ifdef _DEBUG
 	void AssertValid() const override;

@@ -1,65 +1,56 @@
-﻿// CitiesView.cpp : implementation file
+﻿// PhoneTypesView.cpp : implementation file
 //
 
 #include "pch.h"
-#include "CitiesView.h"
+#include "PhoneTypesView.h"
 
-#include "CitiesDialog.h"
+#include "PhoneTypesDialog.h"
 #include "resource.h"
 
-#define CITY_NAME_COLUMN 0
-#define CITY_REGION_COLUMN 1
-#define CITY_NAME_COLUMN_LABEL _T("Name")
-#define CITY_REGION_COLUMN_LABEL _T("Region")
-#define CITY_NAME_COLUMN_WIDTH 150
-#define CITY_REGION_COLUMN_WIDTH 150
-#define CITIES_CREATE_ERROR 0
-#define CITIES_READ_ERROR 1
-#define CITIES_UPDATE_ERROR 2
-#define CITIES_DELETE_ERROR 3
+#define PHONE_TYPE_NAME_COLUMN 0
+#define PHONE_TYPE_NAME_COLUMN_LABEL _T("Type")
+#define PHONE_TYPE_NAME_COLUMN_WIDTH 150
 
 /////////////////////////////////////////////////////////////////////////////
-// CCitiesView
+// CPhoneTypesView
 
-IMPLEMENT_DYNCREATE(CCitiesView, CListView)
+IMPLEMENT_DYNCREATE(CPhoneTypesView, CListView)
 // Връзване на флаг съобщения с методи
-BEGIN_MESSAGE_MAP(CCitiesView, CListView)
-	ON_NOTIFY_REFLECT(LVN_ITEMACTIVATE, &CCitiesView::OnLvnItemActivate)
+BEGIN_MESSAGE_MAP(CPhoneTypesView, CListView)
+	ON_NOTIFY_REFLECT(LVN_ITEMACTIVATE, &CPhoneTypesView::OnLvnItemActivate)
 	ON_WM_CONTEXTMENU()
 END_MESSAGE_MAP()
 
 // Constructor / Destructor
 // ----------------
 
-CCitiesView::CCitiesView()
+CPhoneTypesView::CPhoneTypesView()
 {
 
 }
 
-CCitiesView::~CCitiesView()
+CPhoneTypesView::~CPhoneTypesView()
 {
 }
 
 // Overrides
 // ----------------
 
-BOOL CCitiesView::PreCreateWindow(CREATESTRUCT& cs) {
+BOOL CPhoneTypesView::PreCreateWindow(CREATESTRUCT& cs) {
 	cs.style |= LVS_REPORT;
 	return CListView::PreCreateWindow(cs);
 }
 
-void CCitiesView::OnInitialUpdate()
+void CPhoneTypesView::OnInitialUpdate()
 {
 	CListView::OnInitialUpdate();
 	CListCtrl& oListCtrl = GetListCtrl();
 
 	// Вмъкване на колони
-	oListCtrl.InsertColumn(CITY_NAME_COLUMN, CITY_NAME_COLUMN_LABEL);
-	oListCtrl.InsertColumn(CITY_REGION_COLUMN, CITY_REGION_COLUMN_LABEL);
+	oListCtrl.InsertColumn(PHONE_TYPE_NAME_COLUMN, PHONE_TYPE_NAME_COLUMN_LABEL);
 
 	// Задаване на ширина на колоните
-	oListCtrl.SetColumnWidth(CITY_NAME_COLUMN, CITY_NAME_COLUMN_WIDTH);
-	oListCtrl.SetColumnWidth(CITY_REGION_COLUMN, CITY_REGION_COLUMN_WIDTH);
+	oListCtrl.SetColumnWidth(PHONE_TYPE_NAME_COLUMN, PHONE_TYPE_NAME_COLUMN_WIDTH);
 
 	// Допълнителна стилизация на контролата
 	oListCtrl.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
@@ -68,25 +59,25 @@ void CCitiesView::OnInitialUpdate()
 	LoadRowsData();
 }
 
-void CCitiesView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+void CPhoneTypesView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
 	CView::OnUpdate(pSender, lHint, pHint);
 
 	if (lHint && pHint)
 	{
-		const CCitiesDocument::CCitiesUpdateObject* oCitiesUpdateObject = reinterpret_cast<CCitiesDocument::CCitiesUpdateObject*>(pHint);
-		const DWORD_PTR dwCityItemData = oCitiesUpdateObject->GetUpdateCityData();
+		const CPhoneTypesDocument::CPhoneTypesUpdateObject* oPhoneTypesUpdateObject = reinterpret_cast<CPhoneTypesDocument::CPhoneTypesUpdateObject*>(pHint);
+		const DWORD_PTR dwPhoneTypeItemData = oPhoneTypesUpdateObject->GetUpdatePhoneTypeData();
 
 		switch (lHint)
 		{
 		case OperationsCreate:
-			UpdateOnOperationCreate(dwCityItemData);
+			UpdateOnOperationCreate(dwPhoneTypeItemData);
 			break;
 		case OperationsUpdate:
-			UpdateOnOperationUpdate(dwCityItemData);
+			UpdateOnOperationUpdate(dwPhoneTypeItemData);
 			break;
 		case OperationsDelete:
-			UpdateOnOperationDelete(dwCityItemData);
+			UpdateOnOperationDelete(dwPhoneTypeItemData);
 			break;
 		default:
 			break;
@@ -97,19 +88,19 @@ void CCitiesView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 // Methods
 // ----------------
 
-CCitiesDocument* CCitiesView::GetDocument() const
+CPhoneTypesDocument* CPhoneTypesView::GetDocument() const
 {
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CCitiesDocument)));
-	return dynamic_cast<CCitiesDocument*>(m_pDocument);
+	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CPhoneTypesDocument)));
+	return dynamic_cast<CPhoneTypesDocument*>(m_pDocument);
 }
 
-// CCitiesView message handlers
+// CPhoneTypesView message handlers
 // Функции за обработка на флаг/съобщения
 
-void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
+void CPhoneTypesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	CListCtrl& oListCtrl = GetListCtrl();
-	CCitiesDocument* pCitiesDocument = GetDocument();
+	CPhoneTypesDocument* pPhoneTypesDocument = GetDocument();
 	const int nIndex = oListCtrl.GetSelectionMark();
 
 	if (nIndex == -1)
@@ -117,11 +108,11 @@ void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 		return;
 	}
 
-	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
+	PHONE_TYPES recPhoneType = *reinterpret_cast<PHONE_TYPES*>(oListCtrl.GetItemData(nIndex));
 
-	CCitiesDialog oCitiesDialog(recCity, OperationsRead);
+	CPhoneTypesDialog oPhoneTypesDialog(recPhoneType, OperationsRead);
 
-	oCitiesDialog.DoModal();
+	oPhoneTypesDialog.DoModal();
 
 	if (pResult)
 	{
@@ -131,9 +122,9 @@ void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 
 // Функции за избор при контекстно меню
 #pragma region ContextMenuOptions
-void CCitiesView::OnContextMenuBtnDelete()
+void CPhoneTypesView::OnContextMenuBtnDelete()
 {
-	CCitiesDocument* pCitiesDocument = GetDocument();
+	CPhoneTypesDocument* pPhoneTypesDocument = GetDocument();
 	CListCtrl& oListCtrl = GetListCtrl();
 	const int nIndex = oListCtrl.GetSelectionMark();
 
@@ -142,9 +133,9 @@ void CCitiesView::OnContextMenuBtnDelete()
 		return;
 	}
 
-	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
+	PHONE_TYPES recPhoneType = *reinterpret_cast<PHONE_TYPES*>(oListCtrl.GetItemData(nIndex));
 	CString strAreYouSurePrompt;
-	strAreYouSurePrompt.Format(_T("Are you sure that you want to delete city %s?"), recCity.szName);
+	strAreYouSurePrompt.Format(_T("Are you sure that you want to delete phone type %s?"), recPhoneType.szType);
 
 	const int nResult = MessageBox(strAreYouSurePrompt, _T("Are you sure?"), MB_ICONINFORMATION | MB_OKCANCEL);
 
@@ -153,7 +144,7 @@ void CCitiesView::OnContextMenuBtnDelete()
 		return;
 	}
 
-	const bool bIsSuccessful = pCitiesDocument->DeleteCity(recCity);
+	const bool bIsSuccessful = pPhoneTypesDocument->DeletePhoneType(recPhoneType);
 
 	if (!bIsSuccessful)
 	{
@@ -165,18 +156,18 @@ MB_ICONINFORMATION | MB_OK);
 	}
 }
 
-void CCitiesView::OnContextMenuBtnInsert()
+void CPhoneTypesView::OnContextMenuBtnInsert()
 {
-	CITIES recCity = CITIES();
-	CCitiesDocument* pCitiesDocument = GetDocument();
-	CCitiesDialog oCitiesDialog(recCity, OperationsCreate);
+	PHONE_TYPES recPhoneType = PHONE_TYPES();
+	CPhoneTypesDocument* pPhoneTypesDocument = GetDocument();
+	CPhoneTypesDialog oPhoneTypesDialog(recPhoneType, OperationsCreate);
 
-	if (oCitiesDialog.DoModal() != IDOK)
+	if (oPhoneTypesDialog.DoModal() != IDOK)
 	{
 		return;
 	}
 
-	const bool bIsSuccessful = pCitiesDocument->AddCity(recCity);
+	const bool bIsSuccessful = pPhoneTypesDocument->AddPhoneType(recPhoneType);
 
 	if (!bIsSuccessful)
 	{
@@ -186,10 +177,10 @@ void CCitiesView::OnContextMenuBtnInsert()
 	}
 }
 
-void CCitiesView::OnContextMenuBtnUpdate()
+void CPhoneTypesView::OnContextMenuBtnUpdate()
 {
 	CListCtrl& oListCtrl = GetListCtrl();
-	CCitiesDocument* pCitiesDocument = GetDocument();
+	CPhoneTypesDocument* pPhoneTypesDocument = GetDocument();
 	const int nIndex = oListCtrl.GetSelectionMark();
 
 	if (nIndex == -1)
@@ -197,16 +188,16 @@ void CCitiesView::OnContextMenuBtnUpdate()
 		return;
 	}
 
-	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
+	PHONE_TYPES recPhoneType = *reinterpret_cast<PHONE_TYPES*>(oListCtrl.GetItemData(nIndex));
 
-	CCitiesDialog oCitiesUpdateDialog(recCity, OperationsUpdate);
+	CPhoneTypesDialog oPhoneTypesUpdateDialog(recPhoneType, OperationsUpdate);
 
-	if (oCitiesUpdateDialog.DoModal() != IDOK)
+	if (oPhoneTypesUpdateDialog.DoModal() != IDOK)
 	{
 		return;
 	}
 
-	const BOOL bIsSuccessful = pCitiesDocument->EditCity(recCity);
+	const BOOL bIsSuccessful = pPhoneTypesDocument->EditPhoneType(recPhoneType);
 
 	if (!bIsSuccessful)
 	{
@@ -219,18 +210,18 @@ MB_ICONINFORMATION | MB_OK);
 	}
 }
 
-void CCitiesView::OnContextMenuBtnRefresh()
+void CPhoneTypesView::OnContextMenuBtnRefresh()
 {
 	// Ъпдейт при ползване от повече от една инстанция на приложението
-	CCitiesDocument* pCitiesDocument = GetDocument();
-	pCitiesDocument->RefreshData();
+	CPhoneTypesDocument* pPhoneTypesDocument = GetDocument();
+	pPhoneTypesDocument->RefreshData();
 
 	ClearRowsData();
 	LoadRowsData();
 }
 #pragma endregion ContextMenuOptions
 
-void CCitiesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos)
+void CPhoneTypesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos)
 {
 	ScreenToClient(&oMousePos);
 
@@ -250,7 +241,7 @@ void CCitiesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos)
 	CMenu* pPopup = oMenu.GetSubMenu(0);
 
 	ClientToScreen(&oMousePos);
-	const int nSelectedOption = int(pPopup->TrackPopupMenu(
+	const int nSelectedOption = static_cast<int>(pPopup->TrackPopupMenu(
 		TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_LEFTALIGN | TPM_RETURNCMD,
 		oMousePos.x,
 		oMousePos.y,
@@ -275,29 +266,28 @@ void CCitiesView::OnContextMenu(CWnd* pWnd /*= nullptr*/, CPoint oMousePos)
 	}
 }
 
-void CCitiesView::LoadRowsData()
+void CPhoneTypesView::LoadRowsData()
 {
 	CListCtrl& oListCtrl = GetListCtrl();
 
 	// Документ - за работа с данните
-	CCitiesDocument* pCitiesDocument = GetDocument();
+	CPhoneTypesDocument* pPhoneTypesDocument = GetDocument();
 
-	// Данни - CITIES
-	CCitiesArray& oCitiesArray = pCitiesDocument->GetAllCities();
+	// Данни - PHONE_TYPES
+	CPhoneTypesArray& oPhoneTypesArray = pPhoneTypesDocument->GetAllPhoneTypes();
 
 	// Зареждане на всички градове в списък в лист контролата
-	for (INT_PTR i = 0; i < oCitiesArray.GetCount(); i++)
+	for (INT_PTR i = 0; i < oPhoneTypesArray.GetCount(); i++)
 	{
-		CITIES* pCity = oCitiesArray.GetAt(i);
+		PHONE_TYPES* pPhoneType = oPhoneTypesArray.GetAt(i);
 
 		// Вмъкване на редове
-		const INT nInsertIndex = oListCtrl.InsertItem(i, pCity->szName);
-		oListCtrl.SetItemText(nInsertIndex, CITY_REGION_COLUMN, pCity->szRegion);
-		oListCtrl.SetItemData(nInsertIndex, reinterpret_cast<DWORD_PTR>(pCity));
+		const INT nInsertIndex = oListCtrl.InsertItem(i, pPhoneType->szType);
+		oListCtrl.SetItemData(nInsertIndex, reinterpret_cast<DWORD_PTR>(pPhoneType));
 	}
 }
 
-INT CCitiesView::GetCityIndexInListCtrlByItemData(const DWORD_PTR dwData) const
+INT CPhoneTypesView::GetPhoneTypeIndexInListCtrlByItemData(const DWORD_PTR dwData) const
 {
 	CListCtrl& oListCtrl = GetListCtrl();
 
@@ -315,37 +305,35 @@ INT CCitiesView::GetCityIndexInListCtrlByItemData(const DWORD_PTR dwData) const
 }
 
 #pragma region OnUpdateCases
-void CCitiesView::UpdateOnOperationCreate(const DWORD_PTR dwCityItemData)
+void CPhoneTypesView::UpdateOnOperationCreate(const DWORD_PTR dwPhoneTypeItemData)
 {
 	CListCtrl& oListCtrl = GetListCtrl();
-	CITIES* pCity = reinterpret_cast<CITIES*>(dwCityItemData);
+	PHONE_TYPES* pPhoneType = reinterpret_cast<PHONE_TYPES*>(dwPhoneTypeItemData);
 
 	// Вмъкване на редове
-	const INT nInsertIndex = oListCtrl.InsertItem(oListCtrl.GetItemCount(), pCity->szName);
-	oListCtrl.SetItemText(nInsertIndex, CITY_REGION_COLUMN, pCity->szRegion);
-	oListCtrl.SetItemData(nInsertIndex, dwCityItemData);
+	const INT nInsertIndex = oListCtrl.InsertItem(oListCtrl.GetItemCount(), pPhoneType->szType);
+	oListCtrl.SetItemData(nInsertIndex, dwPhoneTypeItemData);
 }
 
-void CCitiesView::UpdateOnOperationUpdate(const DWORD_PTR dwCityItemData)
+void CPhoneTypesView::UpdateOnOperationUpdate(const DWORD_PTR dwPhoneTypeItemData)
 {
 	CListCtrl& oListCtrl = GetListCtrl();
-	CITIES* pCity = reinterpret_cast<CITIES*>(dwCityItemData);
+	PHONE_TYPES* pPhoneType = reinterpret_cast<PHONE_TYPES*>(dwPhoneTypeItemData);
 
-	pCity = reinterpret_cast<CITIES*>(dwCityItemData);
-	const INT nIndexInListCtrl = GetCityIndexInListCtrlByItemData(dwCityItemData);
+	pPhoneType = reinterpret_cast<PHONE_TYPES*>(dwPhoneTypeItemData);
+	const INT nIndexInListCtrl = GetPhoneTypeIndexInListCtrlByItemData(dwPhoneTypeItemData);
 
-	oListCtrl.SetItemText(nIndexInListCtrl, CITY_NAME_COLUMN, pCity->szName);
-	oListCtrl.SetItemText(nIndexInListCtrl, CITY_REGION_COLUMN, pCity->szRegion);
+	oListCtrl.SetItemText(nIndexInListCtrl, PHONE_TYPE_NAME_COLUMN, pPhoneType->szType);
 }
 
-void CCitiesView::UpdateOnOperationDelete(const DWORD_PTR dwCityItemData)
+void CPhoneTypesView::UpdateOnOperationDelete(const DWORD_PTR dwPhoneTypeItemData)
 {
-	const INT nIndexInListCtrl = GetCityIndexInListCtrlByItemData(dwCityItemData);
+	const INT nIndexInListCtrl = GetPhoneTypeIndexInListCtrlByItemData(dwPhoneTypeItemData);
 	GetListCtrl().DeleteItem(nIndexInListCtrl);
 }
 #pragma endregion OnUpdateCases
 
-void CCitiesView::ClearRowsData()
+void CPhoneTypesView::ClearRowsData()
 {
 	CListCtrl& oListCtrl = GetListCtrl();
 
@@ -359,15 +347,15 @@ void CCitiesView::ClearRowsData()
 }
 
 
-// CCitiesView diagnostics
+// CPhoneTypesView diagnostics
 #ifdef _DEBUG
-void CCitiesView::AssertValid() const
+void CPhoneTypesView::AssertValid() const
 {
 	CListView::AssertValid();
 }
 
 #ifndef _WIN32_WCE
-void CCitiesView::Dump(CDumpContext& dc) const
+void CPhoneTypesView::Dump(CDumpContext& dc) const
 {
 	CListView::Dump(dc);
 }

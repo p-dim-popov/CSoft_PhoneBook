@@ -1,55 +1,50 @@
 ﻿#pragma once
-#include "Structures.h"
 #include "TableAccessor.h"
 #include "Table.h"
 
 /////////////////////////////////////////////////////////////////////////////
-// CCitiesTableAccessor
+// CPhoneNumbersTableAccessor
 
 /// <summary>Аксесор за таблица CITIES oт CSOFT_PHONEBOOK</summary>
-class CCitiesTableAccessor : public CTableAccessor<CITIES>
+class CPhoneNumbersTableAccessor : public CTableAccessor<PHONE_NUMBERS>
 {
-
 	// Constructor / Destructor
 	// ----------------
 public:
-	CCitiesTableAccessor();
-	~CCitiesTableAccessor();
+	CPhoneNumbersTableAccessor();
+	~CPhoneNumbersTableAccessor();
 
 	// Constants
 	// ----------------
 protected:
-	BEGIN_ACCESSOR_MAP(CCitiesTableAccessor, 2)
+	BEGIN_ACCESSOR_MAP(CPhoneNumbersTableAccessor, 2)
 		BEGIN_ACCESSOR(0, TRUE)
 		COLUMN_ENTRY(1, m_recTableRecord.lID)
 		END_ACCESSOR()
 
 		BEGIN_ACCESSOR(1, TRUE)
 		COLUMN_ENTRY(2, m_recTableRecord.lUpdateCounter)
-		COLUMN_ENTRY(3, m_recTableRecord.szName)
-		COLUMN_ENTRY(4, m_recTableRecord.szRegion)
+		COLUMN_ENTRY(3, m_recTableRecord.lPersonId)
+		COLUMN_ENTRY(4, m_recTableRecord.lPhoneTypeId)
+		COLUMN_ENTRY(5, m_recTableRecord.szPhone)
 		END_ACCESSOR()
 	END_ACCESSOR_MAP()
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CCitiesTable
+// CPhoneNumbersTable
 
 /// <summary>Клас за работа с таблица CITIES от CSOFT_PHONEBOOK</summary>
-class CCitiesTable : public ::CTable<CITIES, CCitiesTableAccessor>
+class CPhoneNumbersTable : public ::CTable<PHONE_NUMBERS, CPhoneNumbersTableAccessor>
 {
 	// Constructor / Destructor
 	// ----------------
 public:
-	explicit CCitiesTable(CDataSource* pDataSource, CSession* pSession);
+	CPhoneNumbersTable(CDataSource* pDataSource, CSession* pSession);
+	~CPhoneNumbersTable();
 
 	// Methods
 	// ----------------
 public:
-	BOOL SelectWhereName(const TCHAR* pszCityName, CITIES& recCity);
-
-	// Members
-	// ----------------
-private:
+	BOOL SelectWherePersonID(long lID, CPhoneNumbersArray& oPhoneNumbersArray);
 };
-

@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "CitiesDocument.h"
 
+#include "Utilities.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CCitiesDocument
 
@@ -151,7 +153,7 @@ BOOL CCitiesDocument::EditCity(CITIES& recCity)
 
 	CCitiesUpdateObject oCitiesUpdateObject(reinterpret_cast<DWORD_PTR>(pCity));
 
-	OnUpdateAllViews(Operations::OperationsUpdate, &oCitiesUpdateObject);
+	OnUpdateAllViews(OperationsUpdate, &oCitiesUpdateObject);
 
 	return TRUE;
 }

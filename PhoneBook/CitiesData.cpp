@@ -7,7 +7,8 @@
 // Constructor / Destructor
 // ----------------
 
-CCitiesData::CCitiesData()
+CCitiesData::CCitiesData() :
+	m_oCitiesTable(CCitiesTable(&m_oDataSource, &m_oSession))
 {
 }
 

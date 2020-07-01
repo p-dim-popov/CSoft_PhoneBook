@@ -9,12 +9,23 @@
 #include "PhoneBook.h"
 #include "MainFrm.h"
 
+#include "Utilities.h"
+
 #include "ChildFrm.h"
 #include "PhoneBookDoc.h"
 #include "PhoneBookView.h"
+
 #include "CitiesDocument.h"
 #include "CitiesView.h"
-#include "Examples.h"
+
+#include "PhoneTypesDocument.h"
+#include "PhoneTypesView.h"
+
+#include "PersonsDocument.h"
+#include "PersonsView.h"
+
+
+//#include "Examples.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -103,14 +114,33 @@ BOOL CPhoneBookApp::InitInstance()
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views
-	CMultiDocTemplate* pCitiesDocTemplate;
-	pCitiesDocTemplate = new CMultiDocTemplate(IDR_PhoneBookTYPE,
+
+	CMultiDocTemplate* pCitiesDocTemplate = new CMultiDocTemplate(
+		IDR_PhoneBookTYPE,
 		RUNTIME_CLASS(CCitiesDocument),
 		RUNTIME_CLASS(CChildFrame), // custom MDI child frame
 		RUNTIME_CLASS(CCitiesView));
 	if (!pCitiesDocTemplate)
 		return FALSE;
 	AddDocTemplate(pCitiesDocTemplate);
+
+	CMultiDocTemplate* pPhoneTypesDocTemplate = new CMultiDocTemplate(
+		IDR_PhoneBookTYPE,
+		RUNTIME_CLASS(CPhoneTypesDocument),
+		RUNTIME_CLASS(CChildFrame), // custom MDI child frame
+		RUNTIME_CLASS(CPhoneTypesView));
+	if (!pPhoneTypesDocTemplate)
+		return FALSE;
+	AddDocTemplate(pPhoneTypesDocTemplate);
+
+	CMultiDocTemplate* pPersonsDocTemplate = new CMultiDocTemplate(
+		IDR_PhoneBookTYPE,
+		RUNTIME_CLASS(CPersonsDocument),
+		RUNTIME_CLASS(CChildFrame), // custom MDI child frame
+		RUNTIME_CLASS(CPersonsView));
+	if (!pPersonsDocTemplate)
+		return FALSE;
+	AddDocTemplate(pPersonsDocTemplate);
 
 	// create main MDI Frame window
 	CMainFrame* pMainFrame = new CMainFrame;
@@ -135,8 +165,8 @@ BOOL CPhoneBookApp::InitInstance()
 	pMainFrame->ShowWindow(m_nCmdShow);
 	pMainFrame->UpdateWindow();
 
-	StartExamples(DO_NOT_RUN);
-	
+	//StartExamples(DO_NOT_RUN);
+
 	return TRUE;
 }
 
@@ -158,7 +188,7 @@ class CAboutDlg : public CDialogEx
 public:
 	CAboutDlg() noexcept;
 
-// Dialog Data
+	// Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
 #endif

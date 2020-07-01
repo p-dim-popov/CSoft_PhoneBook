@@ -191,17 +191,31 @@
     <ClInclude Include="CitiesDocument.h" />
     <ClInclude Include="CitiesTable.h" />
     <ClInclude Include="CitiesView.h" />
-    <ClInclude Include="Examples.h" />
+    <ClInclude Include="Data.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PersonsData.h" />
+    <ClInclude Include="PersonsDialog.h" />
+    <ClInclude Include="PersonsDocument.h" />
+    <ClInclude Include="PersonsTable.h" />
+    <ClInclude Include="PhoneNumbersTable.h" />
+    <ClInclude Include="PhoneTypesData.h" />
+    <ClInclude Include="PhoneTypesDialog.h" />
+    <ClInclude Include="PhoneTypesDocument.h" />
+    <ClInclude Include="PhoneTypesTable.h" />
+    <ClInclude Include="PhoneTypesView.h" />
+    <ClInclude Include="Table.h" />
+    <ClInclude Include="TableAccessor.h" />
+    <ClInclude Include="PersonsView.h" />
     <ClInclude Include="PhoneBook.h" />
     <ClInclude Include="PhoneBookDoc.h" />
     <ClInclude Include="PhoneBookView.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Structures.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Task2.h" />
+    <ClInclude Include="Typedefs.h" />
+    <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChildFrm.cpp" />
@@ -217,9 +231,20 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PersonsData.cpp" />
+    <ClCompile Include="PersonsDialog.cpp" />
+    <ClCompile Include="PersonsDocument.cpp" />
+    <ClCompile Include="PersonsTable.cpp" />
+    <ClCompile Include="PersonsView.cpp" />
     <ClCompile Include="PhoneBook.cpp" />
     <ClCompile Include="PhoneBookDoc.cpp" />
     <ClCompile Include="PhoneBookView.cpp" />
+    <ClCompile Include="PhoneNumbersTable.cpp" />
+    <ClCompile Include="PhoneTypesData.cpp" />
+    <ClCompile Include="PhoneTypesDialog.cpp" />
+    <ClCompile Include="PhoneTypesDocument.cpp" />
+    <ClCompile Include="PhoneTypesTable.cpp" />
+    <ClCompile Include="PhoneTypesView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PhoneBook.rc" />
@@ -228,6 +253,7 @@
     <None Include="AutoDeleteMap.inl" />
     <None Include="AutoDeleteTypedPtrArray.inl" />
     <None Include="res\PhoneBook.rc2" />
+    <None Include="Table.inl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\PhoneBook.ico" />

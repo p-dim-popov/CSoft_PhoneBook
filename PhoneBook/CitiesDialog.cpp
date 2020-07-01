@@ -6,6 +6,7 @@
 #include "CitiesDialog.h"
 #include "afxdialogex.h"
 
+
 /////////////////////////////////////////////////////////////////////
 // CCitiesDialog
 #pragma region CCitiesDialog
@@ -124,9 +125,9 @@ INT CCitiesDialog::ValidateCityName(CString& strName, CString* strResultingMessa
 
 	const INT nValidationsResult = oValidator.ValidateString(
 		strName,
-		CStringValidator::NotAllowedChars |
-		CStringValidator::UnderSpecifiedLength |
-		CStringValidator::HasDigits
+		CStringValidator::StringValidationsNotAllowedChars |
+		CStringValidator::StringValidationsUnderSpecifiedLength |
+		CStringValidator::StringValidationsHasDigits
 	);
 
 	if (strResultingMessage && nValidationsResult)
@@ -139,7 +140,11 @@ INT CCitiesDialog::ValidateCityRegion(CString& strRegion, CString* strResultingM
 {
 	CStringValidator oValidator(CITY_NAME_MIN_LENGTH, _T(".,_!*+"));
 
-	const INT nValidationsResult = oValidator.ValidateString(strRegion);
+	const INT nValidationsResult = oValidator.ValidateString(
+		strRegion, 
+		CStringValidator::StringValidationsNotAllowedChars | 
+		CStringValidator::StringValidationsUnderSpecifiedLength
+	);
 
 	if (strResultingMessage && nValidationsResult)
 		*strResultingMessage = oValidator.GetValidationMessage();
