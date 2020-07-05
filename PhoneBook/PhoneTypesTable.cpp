@@ -21,8 +21,8 @@ CPhoneTypesTableAccessor::~CPhoneTypesTableAccessor()
 // Constructor / Destructor
 // ----------------
 
-CPhoneTypesTable::CPhoneTypesTable(CDataSource* pDataSource, CSession* pSession) :
-	CTable<PHONE_TYPES, CPhoneTypesTableAccessor>(pDataSource, pSession, _T("PHONE_TYPES"))
+CPhoneTypesTable::CPhoneTypesTable() :
+	CTable<PHONE_TYPES, CPhoneTypesTableAccessor>(_T("PHONE_TYPES"))
 {
 }
 

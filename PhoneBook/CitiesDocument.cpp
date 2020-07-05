@@ -30,6 +30,8 @@ BOOL CCitiesDocument::OnNewDocument()
 		return FALSE;
 	}
 
+	this->SetTitle(_T("Cities"));
+
 	RefreshData();
 
 	return TRUE;
@@ -153,7 +155,7 @@ BOOL CCitiesDocument::EditCity(CITIES& recCity)
 
 	CCitiesUpdateObject oCitiesUpdateObject(reinterpret_cast<DWORD_PTR>(pCity));
 
-	OnUpdateAllViews(OperationsUpdate, &oCitiesUpdateObject);
+	OnUpdateAllViews(Utilities::OperationsUpdate, &oCitiesUpdateObject);
 
 	return TRUE;
 }
@@ -173,7 +175,7 @@ BOOL CCitiesDocument::AddCity(CITIES& recCity)
 
 	CCitiesUpdateObject oCitiesUpdateObject(reinterpret_cast<DWORD_PTR>(pCity));
 
-	OnUpdateAllViews(OperationsCreate, &oCitiesUpdateObject);
+	OnUpdateAllViews(Utilities::OperationsCreate, &oCitiesUpdateObject);
 	return TRUE;
 }
 
@@ -197,7 +199,7 @@ BOOL CCitiesDocument::DeleteCity(const CITIES& recCity)
 
 	CCitiesUpdateObject oCitiesUpdateObject(dwDeletedCityAddress);
 
-	OnUpdateAllViews(OperationsDelete, &oCitiesUpdateObject);
+	OnUpdateAllViews(Utilities::OperationsDelete, &oCitiesUpdateObject);
 	return TRUE;
 }
 
@@ -209,7 +211,6 @@ void CCitiesDocument::CleanRepository()
 
 void CCitiesDocument::OnUpdateAllViews(LPARAM lHint, CObject* pHint)
 {
-	SetModifiedFlag();
 	UpdateAllViews(NULL, lHint, pHint);
 }
 

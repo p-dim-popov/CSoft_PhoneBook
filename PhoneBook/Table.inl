@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "afxwin.h"
-#include "Table.h"
 
 #define FIRST_ACCESSOR 0
 #define SECOND_ACCESSOR 1
@@ -28,18 +27,10 @@
 // Constructor / Destructor
 // ----------------
 template<typename RECORD_TYPE, class TABLE_ACCESSOR>
-::CTable<RECORD_TYPE, TABLE_ACCESSOR>::CTable(CDataSource* pDataSource, CSession* pSession, TCHAR* pszTableName) :
-	m_pDataSource(pDataSource),
-	m_pSession(pSession),
-	m_pszTableName(pszTableName)
-{
-}
-
-template <typename RECORD_TYPE, class TABLE_ACCESSOR>
-::CTable<RECORD_TYPE, TABLE_ACCESSOR>::CTable(const CTable& oTable) :
-	m_pDataSource(oTable.m_pDataSource),
-	m_pSession(oTable.m_pSession),
-	m_pszTableName(oTable.m_pszTableName)
+::CTable<RECORD_TYPE, TABLE_ACCESSOR>::CTable(TCHAR* pszTableName) :
+	m_strTableName(pszTableName),
+	m_pDataSource(NULL),
+	m_pSession(NULL)
 {
 }
 
@@ -72,7 +63,7 @@ BOOL(::CTable<RECORD_TYPE, TABLE_ACCESSOR>::SelectAll(CAutoDeleteTypedPtrArray<R
 
 	// Конструираме заявката
 	CString strQuery;
-	strQuery.Format(_T("SELECT * FROM %s"), this->m_pszTableName);
+	strQuery.Format(_T("SELECT * FROM %s"), this->m_strTableName);
 
 	// Изпълняваме командата
 	hResult = this->Open(*m_pSession, strQuery);
@@ -258,7 +249,7 @@ BOOL(::CTable<RECORD_TYPE, TABLE_ACCESSOR>::Insert(RECORD_TYPE& recTableRecord))
 
 	// Конструиране на заявката
 	CString strQuery;
-	strQuery.Format(_T("SELECT TOP 0 * FROM %s WITH (SERIALIZABLE)"), this->m_pszTableName);
+	strQuery.Format(_T("SELECT TOP 0 * FROM %s WITH (SERIALIZABLE)"), this->m_strTableName);
 
 	// Изпълняване на заявката
 	hResult = this->Open(*m_pSession, strQuery, &oUpdateDBPropSet);
@@ -448,7 +439,7 @@ HRESULT(::CTable<RECORD_TYPE, TABLE_ACCESSOR>::ExecuteCommandSelectWhereId(const
 {
 	CString strQuery;
 	// конструиране на заявката
-	strQuery.Format(_T("SELECT * FROM %s %s WHERE ID = %d"), this->m_pszTableName, pszLockType ? pszLockType : _T(""), lID);
+	strQuery.Format(_T("SELECT * FROM %s %s WHERE ID = %d"), this->m_strTableName, pszLockType ? pszLockType : _T(""), lID);
 
 	// Изпълняваме командата
 	HRESULT hResult = this->Open(*m_pSession, strQuery, pUpdateDBPropSet);
@@ -485,114 +476,12 @@ HRESULT(::CTable<RECORD_TYPE, TABLE_ACCESSOR>::ExecuteCommandSelectWhereId(const
 	return hResult;
 }
 
-template <typename RECORD_TYPE, class TABLE_ACCESSOR>
-BOOL(::CTable<RECORD_TYPE, TABLE_ACCESSOR>::ExecuteCustomSelectQuery(
-	const TCHAR* pszQuery,
-	CAutoDeleteTypedPtrArray<RECORD_TYPE>& oRecordsArray,
-	CDBPropSet* pUpdateDBPropSet
-))
-{
-	HRESULT hResult = S_OK;
-
-	hResult = OpenDataSourceAndSession();
-	if (FAILED(hResult))
-	{
-		TRACE(ERROR_OpenDataSourceAndSession_MESSAGE);
-
-		return FALSE;
-	}
-
-	// Изпълняваме командата
-	hResult = this->Open(*m_pSession, pszQuery, pUpdateDBPropSet);
-	if (FAILED(hResult))
-	{
-		TRACE(ERROR_COMMAND_OPEN_MESSAGE, hResult, pszQuery);
-
-		this->FailedCloseAll();
-
-		return FALSE;
-	}
-
-	hResult = CCommand<CAccessor<TABLE_ACCESSOR>>::MoveNext();
-	// Прочитаме всички данни и записваме всичко в oArray
-	while (hResult == S_OK)
-	{
-		oRecordsArray.Add(new RECORD_TYPE(this->m_recTableRecord));
-		hResult = CCommand<CAccessor<TABLE_ACCESSOR>>::MoveNext();
-	}
-
-	// Проверяваме дали сме прочели всички данни
-	if (hResult != DB_S_ENDOFROWSET)
-	{
-		TRACE(ERROR_END_OF_ROWSET_NOT_REACHED_MESSAGE, hResult);
-
-		this->FailedCloseAll();
-
-		return FALSE;
-	}
-
-	// Затваряне на командата
-	this->Close();
-
-	return TRUE;
+template<typename RECORD_TYPE, class TABLE_ACCESSOR>
+void(::CTable<RECORD_TYPE, TABLE_ACCESSOR>::SetDataSource(CDataSource* pDataSource)) {
+	this->m_pDataSource = pDataSource;
 }
 
-template <typename RECORD_TYPE, class TABLE_ACCESSOR>
-BOOL(::CTable<RECORD_TYPE, TABLE_ACCESSOR>::ExecuteCustomSelectQuery(
-	const TCHAR* pszQuery,
-	RECORD_TYPE& recTableRecord,
-	CDBPropSet* pUpdateDBPropSet
-))
-{
-	HRESULT hResult = S_OK;
-
-	hResult = OpenDataSourceAndSession();
-	if (FAILED(hResult))
-	{
-		TRACE(ERROR_OpenDataSourceAndSession_MESSAGE);
-
-		return FALSE;
-	}
-
-	// Изпълняваме командата
-	hResult = this->Open(*m_pSession, pszQuery, pUpdateDBPropSet);
-	if (FAILED(hResult))
-	{
-		TRACE(ERROR_COMMAND_OPEN_MESSAGE, hResult, pszQuery);
-
-		this->FailedCloseAll();
-
-		return FALSE;
-	}
-
-	// Взимане на записа
-	hResult = this->MoveFirst();
-	if (FAILED(hResult))
-	{
-		TRACE(ERROR_MOVE_FIRST_MESSAGE, hResult);
-
-		this->FailedCloseAll();
-
-		return FALSE;
-	}
-
-	// Проверка дали записът съществува
-	if (hResult == DB_S_ENDOFROWSET)
-	{
-		TRACE(ERROR_NO_RECORD_WITH_ID_MESSAGE, pszQuery, hResult);
-
-		this->FailedCloseAll();
-
-		return FALSE;
-	}
-
-
-	// Присвояване на стойностите от БД върху подадения запис в програмата
-	recTableRecord = this->m_recTableRecord;
-
-	// Затваряне на командата
-	this->Close();
-
-	return TRUE;
-
+template<typename RECORD_TYPE, class TABLE_ACCESSOR>
+void(::CTable<RECORD_TYPE, TABLE_ACCESSOR>::SetSession(CSession* pSession)) {
+	this->m_pSession = pSession;
 }

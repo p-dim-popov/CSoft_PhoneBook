@@ -1,4 +1,15 @@
 ﻿#pragma once
+#include "Structures.h"
+
+////////////////////////////////////////////////////////////////////////////
+/// IComapre interface for the usage of CAutoDeleteTypedPtrArray
+template<typename TYPE>
+struct ICompare
+{
+	virtual BOOL Compare(TYPE&) const = 0;
+};
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CAutoDeleteTypedPtrArray
 
@@ -11,7 +22,6 @@ class CAutoDeleteTypedPtrArray : public CTypedPtrArray<CPtrArray, ICompare<TYPE>
 	// ----------------
 public:
 	CAutoDeleteTypedPtrArray(BOOL bEnableAutoDelete = TRUE);
-	CAutoDeleteTypedPtrArray(CAutoDeleteTypedPtrArray<TYPE>& oArray);
 	CAutoDeleteTypedPtrArray(const CAutoDeleteTypedPtrArray<TYPE>& oArray);
 	virtual ~CAutoDeleteTypedPtrArray();
 
@@ -30,11 +40,6 @@ public:
 	/// <param name="funcComparer">Sorting criteria</param>
 	CAutoDeleteTypedPtrArray<TYPE> OrderedBy(BOOL(*funcComparer)(TYPE& oFirst, TYPE& oSecond));
 
-	/// <summary> Gets the first element of array </summary>
-	/// <returns> The first element or NULL if nothing found </returns>
-	TYPE* FirstOrDefault();
-	TYPE& First();
-
 	/// <summary> Delegate to CTypedPtrArray </summary>
 	TYPE* GetAt(INT_PTR nIndex) const;
 
@@ -44,12 +49,15 @@ public:
 	/// <summary> Delegate to CTypedPtrArray </summary>
 	INT_PTR Add(TYPE* pItem);
 
+	void DeepCopy(const CAutoDeleteTypedPtrArray<TYPE>& oArray);
+	
 	/// <summary> Custom implementation of C#'s LINQ FirstOrDefault</summary>
 	/// <param name="funcPredicate"> Predicate on which the array will be filtered </param>
 	/// <param name="pCapture"> Capture group similar to lambda's [], just to bypass using <functional> library</param>
 	/// <param name="funcComparer"> Sorting criteria. If passed array will be sorted and then performed binary search </param>
 	/// <returns> The first found occurence item or NULL if nothing found </returns>
 	TYPE* FirstOrDefault(BOOL(*funcPredicate)(TYPE& oFirst, void* pCapture), void* pCapture = NULL, BOOL bIsSorted = FALSE);
+
 	TYPE& First(BOOL(*funcPredicate)(TYPE& oFirst, void* pCapture), void* pCapture = NULL, BOOL bIsSorted = FALSE);
 
 	INT_PTR IndexOf(BOOL(*funcPredicate)(TYPE& oFirst, void* pCapture), void* pCapture = NULL, BOOL bIsSorted = FALSE);

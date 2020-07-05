@@ -18,6 +18,8 @@
 #define CITIES_UPDATE_ERROR 2
 #define CITIES_DELETE_ERROR 3
 
+#define GENERAL_ERROR_MESSAGE _T("Sorry for the inconvenience but error ocurred! Try refreshing the list.")
+
 /////////////////////////////////////////////////////////////////////////////
 // CCitiesView
 
@@ -79,13 +81,13 @@ void CCitiesView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 		switch (lHint)
 		{
-		case OperationsCreate:
+		case Utilities::OperationsCreate:
 			UpdateOnOperationCreate(dwCityItemData);
 			break;
-		case OperationsUpdate:
+		case Utilities::OperationsUpdate:
 			UpdateOnOperationUpdate(dwCityItemData);
 			break;
-		case OperationsDelete:
+		case Utilities::OperationsDelete:
 			UpdateOnOperationDelete(dwCityItemData);
 			break;
 		default:
@@ -119,7 +121,7 @@ void CCitiesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 
 	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
 
-	CCitiesDialog oCitiesDialog(recCity, OperationsRead);
+	CCitiesDialog oCitiesDialog(recCity, Utilities::OperationsRead);
 
 	oCitiesDialog.DoModal();
 
@@ -157,11 +159,7 @@ void CCitiesView::OnContextMenuBtnDelete()
 
 	if (!bIsSuccessful)
 	{
-		MessageBox(_T("Съжаляваме за неудобството, но възникна грешка. \n\
-Възможна причина: проблем с връзката към базата данни (пр.: липса на достъп до Интернет). \n\
-Ако смятате, че проблемът не е от вас, може да опитате отново."),
-_T("Информация"),
-MB_ICONINFORMATION | MB_OK);
+		MessageBox(GENERAL_ERROR_MESSAGE, _T("Information"),MB_ICONINFORMATION | MB_OK);
 	}
 }
 
@@ -169,7 +167,7 @@ void CCitiesView::OnContextMenuBtnInsert()
 {
 	CITIES recCity = CITIES();
 	CCitiesDocument* pCitiesDocument = GetDocument();
-	CCitiesDialog oCitiesDialog(recCity, OperationsCreate);
+	CCitiesDialog oCitiesDialog(recCity, Utilities::OperationsCreate);
 
 	if (oCitiesDialog.DoModal() != IDOK)
 	{
@@ -180,9 +178,7 @@ void CCitiesView::OnContextMenuBtnInsert()
 
 	if (!bIsSuccessful)
 	{
-		MessageBox(_T("Съжаляваме за неудобството, но възникна грешка. \n\
-Възможна причина: проблем с връзката към базата данни (пр.: липса на достъп до Интернет). \n\
-Ако смятате, че проблемът не е от вас или е отстранен, може да опитате отново."), _T("Информация"), MB_ICONINFORMATION | MB_OK);
+		MessageBox(GENERAL_ERROR_MESSAGE, _T("Information"), MB_ICONINFORMATION | MB_OK);
 	}
 }
 
@@ -199,7 +195,7 @@ void CCitiesView::OnContextMenuBtnUpdate()
 
 	CITIES recCity = *reinterpret_cast<CITIES*>(oListCtrl.GetItemData(nIndex));
 
-	CCitiesDialog oCitiesUpdateDialog(recCity, OperationsUpdate);
+	CCitiesDialog oCitiesUpdateDialog(recCity, Utilities::OperationsUpdate);
 
 	if (oCitiesUpdateDialog.DoModal() != IDOK)
 	{
@@ -210,12 +206,7 @@ void CCitiesView::OnContextMenuBtnUpdate()
 
 	if (!bIsSuccessful)
 	{
-		MessageBox(_T("Възникна грешка. \n\
-Възможна причина: записът вече е обновен преди настъпване на настоящите промени. \n\
-Моля обновете вашите данни и опитайте да направите редакциите отново. \n\
-Ако сте сигурни, че това не е проблемът, може да опитате отново."),
-_T("Информация"),
-MB_ICONINFORMATION | MB_OK);
+		MessageBox(GENERAL_ERROR_MESSAGE,_T("Information"),MB_ICONINFORMATION | MB_OK);
 	}
 }
 

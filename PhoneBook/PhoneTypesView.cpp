@@ -11,6 +11,8 @@
 #define PHONE_TYPE_NAME_COLUMN_LABEL _T("Type")
 #define PHONE_TYPE_NAME_COLUMN_WIDTH 150
 
+#define GENERAL_ERROR_MESSAGE _T("Sorry for the inconvenience but error ocurred! Try refreshing the list.")
+
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneTypesView
 
@@ -26,7 +28,6 @@ END_MESSAGE_MAP()
 
 CPhoneTypesView::CPhoneTypesView()
 {
-
 }
 
 CPhoneTypesView::~CPhoneTypesView()
@@ -70,13 +71,13 @@ void CPhoneTypesView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 		switch (lHint)
 		{
-		case OperationsCreate:
+		case Utilities::OperationsCreate:
 			UpdateOnOperationCreate(dwPhoneTypeItemData);
 			break;
-		case OperationsUpdate:
+		case Utilities::OperationsUpdate:
 			UpdateOnOperationUpdate(dwPhoneTypeItemData);
 			break;
-		case OperationsDelete:
+		case Utilities::OperationsDelete:
 			UpdateOnOperationDelete(dwPhoneTypeItemData);
 			break;
 		default:
@@ -110,7 +111,7 @@ void CPhoneTypesView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 
 	PHONE_TYPES recPhoneType = *reinterpret_cast<PHONE_TYPES*>(oListCtrl.GetItemData(nIndex));
 
-	CPhoneTypesDialog oPhoneTypesDialog(recPhoneType, OperationsRead);
+	CPhoneTypesDialog oPhoneTypesDialog(recPhoneType, Utilities::OperationsRead);
 
 	oPhoneTypesDialog.DoModal();
 
@@ -148,11 +149,7 @@ void CPhoneTypesView::OnContextMenuBtnDelete()
 
 	if (!bIsSuccessful)
 	{
-		MessageBox(_T("Съжаляваме за неудобството, но възникна грешка. \n\
-Възможна причина: проблем с връзката към базата данни (пр.: липса на достъп до Интернет). \n\
-Ако смятате, че проблемът не е от вас, може да опитате отново."),
-_T("Информация"),
-MB_ICONINFORMATION | MB_OK);
+		MessageBox(GENERAL_ERROR_MESSAGE,_T("Information"),MB_ICONINFORMATION | MB_OK);
 	}
 }
 
@@ -160,7 +157,7 @@ void CPhoneTypesView::OnContextMenuBtnInsert()
 {
 	PHONE_TYPES recPhoneType = PHONE_TYPES();
 	CPhoneTypesDocument* pPhoneTypesDocument = GetDocument();
-	CPhoneTypesDialog oPhoneTypesDialog(recPhoneType, OperationsCreate);
+	CPhoneTypesDialog oPhoneTypesDialog(recPhoneType, Utilities::OperationsCreate);
 
 	if (oPhoneTypesDialog.DoModal() != IDOK)
 	{
@@ -171,9 +168,7 @@ void CPhoneTypesView::OnContextMenuBtnInsert()
 
 	if (!bIsSuccessful)
 	{
-		MessageBox(_T("Съжаляваме за неудобството, но възникна грешка. \n\
-Възможна причина: проблем с връзката към базата данни (пр.: липса на достъп до Интернет). \n\
-Ако смятате, че проблемът не е от вас или е отстранен, може да опитате отново."), _T("Информация"), MB_ICONINFORMATION | MB_OK);
+		MessageBox(GENERAL_ERROR_MESSAGE, _T("Information"), MB_ICONINFORMATION | MB_OK);
 	}
 }
 
@@ -190,7 +185,7 @@ void CPhoneTypesView::OnContextMenuBtnUpdate()
 
 	PHONE_TYPES recPhoneType = *reinterpret_cast<PHONE_TYPES*>(oListCtrl.GetItemData(nIndex));
 
-	CPhoneTypesDialog oPhoneTypesUpdateDialog(recPhoneType, OperationsUpdate);
+	CPhoneTypesDialog oPhoneTypesUpdateDialog(recPhoneType, Utilities::OperationsUpdate);
 
 	if (oPhoneTypesUpdateDialog.DoModal() != IDOK)
 	{
@@ -201,11 +196,7 @@ void CPhoneTypesView::OnContextMenuBtnUpdate()
 
 	if (!bIsSuccessful)
 	{
-		MessageBox(_T("Възникна грешка. \n\
-Възможна причина: записът вече е обновен преди настъпване на настоящите промени. \n\
-Моля обновете вашите данни и опитайте да направите редакциите отново. \n\
-Ако сте сигурни, че това не е проблемът, може да опитате отново."),
-_T("Информация"),
+		MessageBox(GENERAL_ERROR_MESSAGE, _T("Information"),
 MB_ICONINFORMATION | MB_OK);
 	}
 }

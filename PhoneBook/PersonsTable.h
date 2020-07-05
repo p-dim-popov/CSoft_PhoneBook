@@ -44,6 +44,6 @@ class CPersonsTable : public ::CTable<PERSONS, CPersonsTableAccessor>
 	// Constructor / Destructor
 	// ----------------
 public:
-	CPersonsTable(CDataSource* pDataSource, CSession* pSession);
+	CPersonsTable();
 	~CPersonsTable();
 };

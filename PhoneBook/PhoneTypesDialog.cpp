@@ -11,7 +11,7 @@
 
 IMPLEMENT_DYNAMIC(CPhoneTypesDialog, CDialog)
 
-CPhoneTypesDialog::CPhoneTypesDialog(PHONE_TYPES& recPhoneType, Operations eOperation)
+CPhoneTypesDialog::CPhoneTypesDialog(PHONE_TYPES& recPhoneType, Utilities::Operations eOperation)
 	: CDialog(IDD_PHONE_TYPES_DIALOG), m_recPhoneType(recPhoneType), m_eOperation(eOperation)
 {
 }
@@ -43,15 +43,15 @@ BOOL CPhoneTypesDialog::OnInitDialog()
 
 	switch (m_eOperation)
 	{
-	case OperationsCreate:
+	case Utilities::OperationsCreate:
 		this->SetWindowText(_T("Add phone type"));
 
 		break;
-	case OperationsUpdate:
+	case Utilities::OperationsUpdate:
 		this->SetWindowText(_T("Update phone type"));
 
 		break;
-	case OperationsRead:
+	case Utilities::OperationsRead:
 		this->SetWindowText(_T("PhoneType info"));
 
 		m_edbType.EnableWindow(FALSE);
@@ -71,9 +71,9 @@ void CPhoneTypesDialog::OnOK()
 
 	m_edbType.GetWindowText(strNewType);
 
-	if (m_eOperation == OperationsRead ||
+	if (m_eOperation == Utilities::OperationsRead ||
 		!StrCmp(strNewType, m_recPhoneType.szType) &&
-		m_eOperation != OperationsCreate)
+		m_eOperation != Utilities::OperationsCreate)
 	{
 		CDialog::OnOK();
 		return;
@@ -99,13 +99,13 @@ void CPhoneTypesDialog::OnOK()
 
 INT CPhoneTypesDialog::ValidatePhoneType(CString& strType, CString* strResultingMessage)
 {
-	CStringValidator oValidator(PHONE_TYPES_TYPE_MIN_LENGTH, _T(",*+"));
+	Utilities::CStringValidator oValidator(PHONE_TYPES_TYPE_MIN_LENGTH, _T(",*+"));
 
 	const INT nValidationsResult = oValidator.ValidateString(
 		strType,
-		CStringValidator::StringValidationsNotAllowedChars |
-		CStringValidator::StringValidationsUnderSpecifiedLength |
-		CStringValidator::StringValidationsHasDigits
+		Utilities::CStringValidator::StringValidationsNotAllowedChars |
+		Utilities::CStringValidator::StringValidationsUnderSpecifiedLength |
+		Utilities::CStringValidator::StringValidationsHasDigits
 	);
 
 	if (strResultingMessage && nValidationsResult)

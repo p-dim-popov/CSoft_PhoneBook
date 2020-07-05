@@ -68,6 +68,8 @@ private:
 	/// <param name="oPoint">Обект с информация за местоположението на курсора</param>
 	void OnContextMenu(CWnd* pWnd, CPoint oPoint);
 
+	void Refresh();
+	
 	/// <summary>Обновяване на данните в лист контрола</summary>
 	void LoadRowsData();
 

@@ -1,6 +1,5 @@
 ﻿#pragma once
-#include "Typedefs.h"
-
+#include "Structures.h"
 /////////////////////////////////////////////////////////////////////////////
 // CTable
 
@@ -11,8 +10,7 @@ class CTable : public CCommand<CAccessor<TABLE_ACCESSOR>>
 	// Constructor / Destructor
 	// ----------------
 public:
-	explicit CTable(CDataSource* pDataSource, CSession* pSession, TCHAR* pszTableName);
-	CTable(const CTable& oTable);
+	CTable(TCHAR* pszTableName);
 	~CTable();
 
 	// Methods
@@ -45,6 +43,8 @@ public:
 	/// <returns>BOOL - TRUE ако е успешно и FALSE ако е неуспешно</returns>
 	virtual BOOL DeleteWhereID(const long lID);
 
+	void SetDataSource(CDataSource* pDataSource);
+	void SetSession(CSession* pSession);
 protected:
 	/// <summary>Настройка на DBPropSet преди установяване на връзка към БД</summary>
 	/// <param name="oDBPropSet">Обект за сет от параметри за БД</param>
@@ -75,23 +75,12 @@ protected:
 	/// <returns>HRESULT - Статус за успеваемостта</returns>
 	virtual HRESULT ExecuteCommandSelectWhereId(const long lID, CDBPropSet* pUpdateDBPropSet = NULL, const TCHAR* pszLockType = NULL);
 
-	virtual BOOL ExecuteCustomSelectQuery(
-		const TCHAR* pszQuery,
-		CAutoDeleteTypedPtrArray<RECORD_TYPE>& oRecordsArray,
-		CDBPropSet* pUpdateDBPropSet = NULL
-	);
-	virtual BOOL ExecuteCustomSelectQuery(
-		const TCHAR* pszQuery,
-		RECORD_TYPE& recTableRecord,
-		CDBPropSet* pUpdateDBPropSet = NULL
-	);
-
 	// Members
 	// ----------------
 protected:
 	CDataSource* m_pDataSource;
 	CSession* m_pSession;
-	TCHAR* m_pszTableName;
+	CString m_strTableName;
 };
 
 #include "Table.inl"

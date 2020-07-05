@@ -13,7 +13,7 @@
 
 IMPLEMENT_DYNAMIC(CCitiesDialog, CDialog)
 
-CCitiesDialog::CCitiesDialog(CITIES& recCity, Operations eOperation)
+CCitiesDialog::CCitiesDialog(CITIES& recCity, Utilities::Operations eOperation)
 	: CDialog(IDD_CITIES_DIALOG), m_recCity(recCity), m_eOperation(eOperation)
 {
 }
@@ -50,15 +50,15 @@ BOOL CCitiesDialog::OnInitDialog()
 
 	switch (m_eOperation)
 	{
-	case Operations::OperationsCreate:
+	case Utilities::OperationsCreate:
 		this->SetWindowText(_T("Add city"));
 
 		break;
-	case Operations::OperationsUpdate:
+	case Utilities::OperationsUpdate:
 		this->SetWindowText(_T("Update city"));
 
 		break;
-	case Operations::OperationsRead:
+	case Utilities::OperationsRead:
 		this->SetWindowText(_T("City info"));
 
 		m_edbName.EnableWindow(FALSE);
@@ -82,10 +82,10 @@ void CCitiesDialog::OnOK()
 	m_edbName.GetWindowText(strNewName);
 	m_edbRegion.GetWindowText(strNewRegion);
 
-	if (m_eOperation == OperationsRead ||
+	if (m_eOperation == Utilities::OperationsRead ||
 		!StrCmp(strNewName, m_recCity.szName) &&
 		!StrCmp(strNewRegion, m_recCity.szRegion) &&
-		m_eOperation != OperationsCreate)
+		m_eOperation != Utilities::OperationsCreate)
 	{
 		CDialog::OnOK();
 		return;
@@ -121,13 +121,13 @@ void CCitiesDialog::OnOK()
 
 INT CCitiesDialog::ValidateCityName(CString& strName, CString* strResultingMessage)
 {
-	CStringValidator oValidator(CITY_NAME_MIN_LENGTH, _T(".,_!*+"));
+	Utilities::CStringValidator oValidator(CITY_NAME_MIN_LENGTH, _T(".,_!*+"));
 
 	const INT nValidationsResult = oValidator.ValidateString(
 		strName,
-		CStringValidator::StringValidationsNotAllowedChars |
-		CStringValidator::StringValidationsUnderSpecifiedLength |
-		CStringValidator::StringValidationsHasDigits
+		Utilities::CStringValidator::StringValidationsNotAllowedChars |
+		Utilities::CStringValidator::StringValidationsUnderSpecifiedLength |
+		Utilities::CStringValidator::StringValidationsHasDigits
 	);
 
 	if (strResultingMessage && nValidationsResult)
@@ -138,12 +138,12 @@ INT CCitiesDialog::ValidateCityName(CString& strName, CString* strResultingMessa
 
 INT CCitiesDialog::ValidateCityRegion(CString& strRegion, CString* strResultingMessage)
 {
-	CStringValidator oValidator(CITY_NAME_MIN_LENGTH, _T(".,_!*+"));
+	Utilities::CStringValidator oValidator(CITY_NAME_MIN_LENGTH, _T(".,_!*+"));
 
 	const INT nValidationsResult = oValidator.ValidateString(
-		strRegion, 
-		CStringValidator::StringValidationsNotAllowedChars | 
-		CStringValidator::StringValidationsUnderSpecifiedLength
+		strRegion,
+		Utilities::CStringValidator::StringValidationsNotAllowedChars |
+		Utilities::CStringValidator::StringValidationsUnderSpecifiedLength
 	);
 
 	if (strResultingMessage && nValidationsResult)

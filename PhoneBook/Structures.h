@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "AutoDeleteTypedPtrArray.h"
 
 #define CITIES_NAME_LENGTH 32
 #define CITIES_REGION_LENGTH 32
@@ -10,11 +11,6 @@
 #define PHONE_NUMBERS_PHONE_LENGTH 32
 #define PHONE_TYPES_TYPE_LENGTH 128
 
-template<typename TYPE>
-struct ICompare
-{
-	virtual BOOL Compare(TYPE&) const = 0;
-};
 
 /// <summary>Структура репрезентираща град от БД - CITIES</summary>
 struct CITIES : ICompare<CITIES>
@@ -64,8 +60,6 @@ struct CITIES : ICompare<CITIES>
 	{
 		SecureZeroMemory(this, sizeof(*this));
 	}
-
-	~CITIES() {}
 };
 
 /// <summary>Структура репрезентираща абонат от БД - PERSONS</summary>
@@ -118,8 +112,6 @@ struct PERSONS : ICompare<PERSONS>
 	{
 		SecureZeroMemory(this, sizeof(*this));
 	}
-
-	~PERSONS() {}
 };
 
 /// <summary>Структура репрезентираща телефонен номер от БД - PHONE_NUMBERS</summary>
@@ -152,8 +144,6 @@ struct PHONE_NUMBERS : ICompare<PHONE_NUMBERS>
 	{
 		SecureZeroMemory(this, sizeof(*this));
 	}
-
-	~PHONE_NUMBERS() {}
 };
 
 /// <summary>Структура репрезентираща тип на телефон от БД - PHONE_TYPES</summary>
@@ -180,6 +170,9 @@ struct PHONE_TYPES : ICompare<PHONE_TYPES>
 	{
 		SecureZeroMemory(this, sizeof(*this));
 	}
-
-	~PHONE_TYPES() {}
 };
+
+typedef CAutoDeleteTypedPtrArray<CITIES> CCitiesArray;
+typedef CAutoDeleteTypedPtrArray<PERSONS> CPersonsArray;
+typedef CAutoDeleteTypedPtrArray<PHONE_NUMBERS> CPhoneNumbersArray;
+typedef CAutoDeleteTypedPtrArray<PHONE_TYPES> CPhoneTypesArray;

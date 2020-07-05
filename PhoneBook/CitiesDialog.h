@@ -21,7 +21,7 @@ class CCitiesDialog : public CDialog
 	// Constructor / Destructor
 	// ----------------
 public:
-	CCitiesDialog(CITIES& recCity, Operations eOperation);   // constructor
+	CCitiesDialog(CITIES& recCity, Utilities::Operations eOperation);   // constructor
 	virtual ~CCitiesDialog();
 
 	// Dialog Data
@@ -51,7 +51,7 @@ private:
 	// -------------
 private:
 	CITIES& m_recCity;
-	Operations m_eOperation;
+	Utilities::Operations m_eOperation;
 
 	CEdit m_edbName;
 	CEdit m_edbRegion;

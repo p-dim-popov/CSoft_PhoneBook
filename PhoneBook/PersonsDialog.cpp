@@ -5,6 +5,7 @@
 #include "PhoneBook.h"
 #include "PersonsDialog.h"
 #include "afxdialogex.h"
+#include "PhoneNumbersDialog.h"
 
 
 #define PHONE_NUMBER_TYPE_COLUMN 0
@@ -26,7 +27,7 @@
 // CPersonsDialog
 
 CPersonsDialog::CPersonsDialog(
-	Operations eOperation,
+	Utilities::Operations eOperation,
 
 	PERSONS& recPerson,
 	CPhoneNumbersArray& oPersonPhoneNumbersArray,
@@ -45,11 +46,6 @@ CPersonsDialog::CPersonsDialog(
 
 	m_oPhoneTypesArray(oPhoneTypesArray),
 	m_oCitiesArray(oCitiesArray),
-
-	m_pNewPhoneTypes(pNewPhoneTypes),
-
-	m_bAreNewPhoneTypesAdded(FALSE),
-	m_bIsNewCityAdded(FALSE),
 
 	m_eOperation(eOperation)
 {
@@ -72,28 +68,21 @@ void CPersonsDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CMB_PERSONS_CITY, m_cmbCity);
 	DDX_Control(pDX, IDC_CMB_PERSONS_PHONE_TYPE, m_cmbPhoneType);
 
-	DDX_Control(pDX, IDC_BTN_PERSONS_ADD_NEW_CITY, m_btnAddNewCity);
-	DDX_Control(pDX, IDC_BTN_PERSONS_ADD_NEW_TYPE, m_btnAddNewPhoneType);
 	DDX_Control(pDX, IDC_BTN_PERSONS_ADD_PHONE, m_btnAddPhone);
 	DDX_Control(pDX, IDC_BTN_PERSONS_REMOVE_NUMBER, m_btnRemovePhone);
 	DDX_Control(pDX, IDC_BTN_PERSONS_EDIT_NUMBER, m_btnEditPhone);
 
 	DDX_Control(pDX, IDC_LSC_PERSONS_PHONE_NUMBERS, m_lscPhoneNumbers);
-	DDX_Control(pDX, IDC_EDB_PERSONS_CITY_NAME, m_edbCityName);
-	DDX_Control(pDX, IDC_EDB_PERSONS_CITY_REGION, m_edbCityRegion);
-	DDX_Control(pDX, IDC_EDB_PERSONS_PHONE_TYPE, m_edbPhoneType);
 
-	DDX_Control(pDX, IDC_STT_PERSONS_CITY_NAME, m_sttCityName);
-	DDX_Control(pDX, IDC_STT_PERSONS_CITY_REGION, m_sttCityRegion);
 	DDX_Control(pDX, IDC_STT_PERSONS_FIRST_NAME_VALIDATION_INFO, m_sttPersonsFirstNameValidationInfo);
 	DDX_Control(pDX, IDC_STT_PERSONS_MIDDLE_NAME_VALIDATION_INFO, m_sttPersonsMiddleNameValidationInfo);
 	DDX_Control(pDX, IDC_STT_PERSONS_LAST_NAME_VALIDATION_INFO, m_sttPersonsLastNameValidationInfo);
 	DDX_Control(pDX, IDC_STT_PERSONS_UCN_VALIDATION_INFO, m_sttPersonsUCNValidationInfo);
 	DDX_Control(pDX, IDC_STT_PERSONS_ADDRESS_VALIDATION_INFO, m_sttPersonsAddressValidationInfo);
-	DDX_Control(pDX, IDC_STT_PERSONS_CITY_NAME_VALIDATION_INFO, m_sttPersonsCityNameValidationInfo);
-	DDX_Control(pDX, IDC_STT_PERSONS_CITY_REGION_VALIDATION_INFO, m_sttPersonsCityRegionValidationInfo);
+	DDX_Control(pDX, IDC_STT_PERSONS_CITY_NAME_VALIDATION_INFO, m_sttPersonsCityValidationInfo);
 	DDX_Control(pDX, IDC_STT_PERSONS_PHONE_TYPE_VALIDATION_INFO, m_sttPersonsPhoneTypeValidationInfo);
 	DDX_Control(pDX, IDC_STT_PERSONS_PHONE_NUMBER_VALIDATION_INFO, m_sttPersonsPhoneNumberValidationInfo);
+	DDX_Control(pDX, IDOK, m_btnOK);
 }
 
 
@@ -101,8 +90,6 @@ void CPersonsDialog::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CPersonsDialog, CDialog)
 	ON_BN_CLICKED(IDOK, &CPersonsDialog::OnOK)
 	ON_BN_CLICKED(IDCANCEL, &CPersonsDialog::OnCancel)
-	ON_BN_CLICKED(IDC_BTN_PERSONS_ADD_NEW_CITY, &CPersonsDialog::OnBnClickedBtnPersonsAddNewCity)
-	ON_BN_CLICKED(IDC_BTN_PERSONS_ADD_NEW_TYPE, &CPersonsDialog::OnBnClickedBtnPersonsAddNewType)
 	ON_BN_CLICKED(IDC_BTN_PERSONS_ADD_PHONE, &CPersonsDialog::OnBnClickedBtnPersonsAddPhone)
 	ON_BN_CLICKED(IDC_BTN_PERSONS_REMOVE_NUMBER, &CPersonsDialog::OnBnClickedBtnPersonsRemoveNumber)
 	ON_BN_CLICKED(IDC_BTN_PERSONS_EDIT_NUMBER, &CPersonsDialog::OnBnClickedBtnPersonsEditNumber)
@@ -112,29 +99,22 @@ END_MESSAGE_MAP()
 BOOL CPersonsDialog::OnInitDialog()
 {
 	CDialog::OnInitDialog();
-	
-#pragma region InitDialogSetTexts
+
 	m_edbFirstName.SetWindowText(m_recPerson.szFirstName);
 	m_edbMiddleName.SetWindowText(m_recPerson.szMiddleName);
 	m_edbLastName.SetWindowText(m_recPerson.szLastName);
 	m_edbUCN.SetWindowText(m_recPerson.szUCN);
 	m_edbAddress.SetWindowText(m_recPerson.szAddress);
-#pragma endregion
 
-#pragma region InitDialogSetLimitTexts
 	m_edbFirstName.SetLimitText(PERSONS_FIRST_NAME_LENGTH);
 	m_edbMiddleName.SetLimitText(PERSONS_MIDDLE_NAME_LENGTH);
 	m_edbLastName.SetLimitText(PERSONS_LAST_NAME_LENGTH);
 	m_edbUCN.SetLimitText(PERSONS_UCN_LENGTH);
 	m_edbAddress.SetLimitText(PERSONS_ADDRESS_LENGTH);
-	
-	m_edbCityName.SetLimitText(CITIES_NAME_LENGTH);
-	m_edbCityRegion.SetLimitText(CITIES_REGION_LENGTH);
-	
-	m_edbPhoneType.SetLimitText(PHONE_TYPES_TYPE_LENGTH);
+
 	m_edbPhoneNumber.SetLimitText(PHONE_NUMBERS_PHONE_LENGTH);
-#pragma endregion
-	
+
+
 	m_oCitiesArray
 		.Sort(
 			[](CITIES& recFirst, CITIES& recSecond)
@@ -153,13 +133,13 @@ BOOL CPersonsDialog::OnInitDialog()
 	CString strCity;
 	strCity.Format(_T("%s - %s"), m_recPersonCity.szRegion, m_recPersonCity.szName);
 	m_cmbCity.SelectString(0, strCity);
-	
+
 	m_oPhoneTypesArray
 		.Sort(
 			[](PHONE_TYPES& recFirst, PHONE_TYPES& recSecond)
 			-> BOOL { return StrCmp(recFirst.szType, recSecond.szType) > 0;}
 	);
-	
+
 	// populate phone types in combo box
 	for (INT_PTR i = 0; i < m_oPhoneTypesArray.GetSize(); i++)
 	{
@@ -183,27 +163,27 @@ BOOL CPersonsDialog::OnInitDialog()
 	for (INT_PTR i = 0; i < m_oPersonPhoneNumbersArray.GetCount(); i++)
 	{
 		PHONE_NUMBERS* pPhoneNumber = m_oPersonPhoneNumbersArray.GetAt(i);
-		PHONE_TYPES* pPhoneType = m_oPhoneTypesArray
-			.FirstOrDefault(
+		PHONE_TYPES recPhoneType = m_oPhoneTypesArray
+			.First(
 				[](PHONE_TYPES& oFirst, void* pPhoneNumber) -> BOOL { return oFirst.lID == static_cast<PHONE_NUMBERS*>(pPhoneNumber)->lPhoneTypeId; },
 				pPhoneNumber
 			);
 
 		// Вмъкване на редове
-		const INT nInsertIndex = m_lscPhoneNumbers.InsertItem(i, pPhoneType->szType);
+		const INT nInsertIndex = m_lscPhoneNumbers.InsertItem(i, recPhoneType.szType);
 		m_lscPhoneNumbers.SetItemText(nInsertIndex, PHONE_NUMBER_NUMBER_COLUMN, pPhoneNumber->szPhone);
 		m_lscPhoneNumbers.SetItemData(nInsertIndex, i);
 	}
 
 	switch (m_eOperation)
 	{
-	case OperationsCreate:
+	case Utilities::OperationsCreate:
 		PrepareForOperationCreate();
 		break;
-	case OperationsUpdate:
+	case Utilities::OperationsUpdate:
 		PrepareForOperationUpdate();
 		break;
-	case OperationsRead:
+	case Utilities::OperationsRead:
 		PrepareForOperationRead();
 		break;
 	default:
@@ -216,60 +196,21 @@ BOOL CPersonsDialog::OnInitDialog()
 INT CPersonsDialog::CollectAndValidateCityAndDisplayMessage(CString& strCityName, CString& strCityRegion)
 {
 	INT nValidationsResult = 0;
-	if (!m_edbCityName.IsWindowVisible())
-	{
-		CString strCity;
-		m_cmbCity.GetWindowText(strCity);
-		if (strCity.IsEmpty())
-		{
-			m_cmbCity.SetFocus();
-			m_sttPersonsCityNameValidationInfo.SetWindowText(_T("selection cannot be empty"));
-			m_sttPersonsCityNameValidationInfo.ShowWindow(SW_SHOW);
-			return ++nValidationsResult;
-		}
 
-		CStringArray oStringArray;
-		Split(strCity, _T(" - "), oStringArray);
-		strCityRegion = oStringArray.GetAt(0);
-		strCityName = oStringArray.GetAt(1);
-		return nValidationsResult;
+	CString strCity;
+	m_cmbCity.GetWindowText(strCity);
+	if (strCity.IsEmpty())
+	{
+		m_cmbCity.SetFocus();
+		m_sttPersonsCityValidationInfo.SetWindowText(_T("selection cannot be empty"));
+		m_sttPersonsCityValidationInfo.ShowWindow(SW_SHOW);
+		return ++nValidationsResult;
 	}
 
-	m_edbCityName.GetWindowText(strCityName);
-	m_edbCityRegion.GetWindowText(strCityRegion);
-
-	CStringValidator oNameValidator(CITY_NAME_MIN_LENGTH, _T(".,_!*+"));
-
-	nValidationsResult = oNameValidator.ValidateString(
-		strCityName,
-		CStringValidator::StringValidationsNotAllowedChars |
-		CStringValidator::StringValidationsUnderSpecifiedLength |
-		CStringValidator::StringValidationsHasDigits
-	);
-
-	if (nValidationsResult)
-	{
-		m_edbCityName.SetFocus();
-		m_sttPersonsCityNameValidationInfo.ShowWindow(SW_SHOW);
-		m_sttPersonsCityNameValidationInfo.SetWindowText(oNameValidator.GetValidationMessage());
-	}
-
-	CStringValidator oRegionValidator(CITY_REGION_MIN_LENGTH, _T(".,_!*+"));
-
-	nValidationsResult = oRegionValidator.ValidateString(
-		strCityRegion,
-		CStringValidator::StringValidationsNotAllowedChars |
-		CStringValidator::StringValidationsUnderSpecifiedLength |
-		CStringValidator::StringValidationsHasDigits
-	);
-
-	if (nValidationsResult)
-	{
-		m_edbCityRegion.SetFocus();
-		m_sttPersonsCityRegionValidationInfo.ShowWindow(SW_SHOW);
-		m_sttPersonsCityRegionValidationInfo.SetWindowText(oRegionValidator.GetValidationMessage());
-	}
-
+	CStringArray oStringArray;
+	Utilities::StringSplit(strCity, _T(" - "), oStringArray);
+	strCityRegion = oStringArray.GetAt(0);
+	strCityName = oStringArray.GetAt(1);
 	return nValidationsResult;
 }
 
@@ -277,13 +218,13 @@ INT CPersonsDialog::CollectAndValidateNameAndDisplayMessage(CString& strName, CE
 {
 	edbEditBox.GetWindowText(strName);
 
-	CStringValidator oValidator(PERSON_NAME_MIN_LENGTH, _T(".,_!+-?"));
+	Utilities::CStringValidator oValidator(PERSON_NAME_MIN_LENGTH, _T(".,_!+-?"));
 
 	const INT nValidationsResult = oValidator.ValidateString(
 		strName,
-		CStringValidator::StringValidationsNotAllowedChars |
-		CStringValidator::StringValidationsUnderSpecifiedLength |
-		CStringValidator::StringValidationsHasDigits
+		Utilities::CStringValidator::StringValidationsNotAllowedChars |
+		Utilities::CStringValidator::StringValidationsUnderSpecifiedLength |
+		Utilities::CStringValidator::StringValidationsHasDigits
 	);
 
 	if (nValidationsResult)
@@ -300,11 +241,11 @@ INT CPersonsDialog::CollectAndValidateUCNAndDisplayMessage(CString& strUCN)
 {
 	m_edbUCN.GetWindowText(strUCN);
 
-	CStringValidator oValidator(PERSON_UCN_MIN_LENGTH, _T(".,_!+-?"));
+	Utilities::CStringValidator oValidator(PERSON_UCN_MIN_LENGTH, _T(".,_!+-?"));
 
 	const INT nValidationsResult = oValidator.ValidateString(strUCN,
-		CStringValidator::StringValidationsHasLetters |
-		CStringValidator::StringValidationsUnderSpecifiedLength);
+		Utilities::CStringValidator::StringValidationsHasLetters |
+		Utilities::CStringValidator::StringValidationsUnderSpecifiedLength);
 
 	if (nValidationsResult)
 	{
@@ -320,9 +261,9 @@ INT CPersonsDialog::CollectAndValidateAddressAndDisplayMessage(CString& strAddre
 {
 	m_edbAddress.GetWindowText(strAddress);
 
-	CStringValidator oValidator(PERSON_ADDRESS_MIN_LENGTH);
+	Utilities::CStringValidator oValidator(PERSON_ADDRESS_MIN_LENGTH);
 
-	const INT nValidationsResult = oValidator.ValidateString(strAddress, CStringValidator::StringValidationsUnderSpecifiedLength);
+	const INT nValidationsResult = oValidator.ValidateString(strAddress, Utilities::CStringValidator::StringValidationsUnderSpecifiedLength);
 
 	if (nValidationsResult)
 	{
@@ -337,7 +278,7 @@ INT CPersonsDialog::CollectAndValidateAddressAndDisplayMessage(CString& strAddre
 
 void CPersonsDialog::OnOK()
 {
-	if (m_eOperation == OperationsRead)
+	if (m_eOperation == Utilities::OperationsRead)
 	{
 		CDialog::OnOK();
 		return;
@@ -359,7 +300,7 @@ void CPersonsDialog::OnOK()
 	const INT nLastNameValidation = CollectAndValidateNameAndDisplayMessage(strLastName, m_edbLastName, m_sttPersonsLastNameValidationInfo);
 	const INT nUCNValidation = CollectAndValidateUCNAndDisplayMessage(strUCN);
 	const INT nAddressValidation = CollectAndValidateAddressAndDisplayMessage(strAddress);
-
+	
 	const INT nCityValidation = CollectAndValidateCityAndDisplayMessage(strCityName, strCityRegion);
 
 	if (!!nFirstNameValidation ||
@@ -376,39 +317,20 @@ void CPersonsDialog::OnOK()
 	m_recPerson.SetUCN(strUCN.GetString());
 	m_recPerson.SetAddress(strAddress);
 
-	if (m_edbCityName.IsWindowVisible())
-	{
-		m_bIsNewCityAdded = TRUE;
-		m_recPersonCity.SetName(strCityName);
-		m_recPersonCity.SetRegion(strCityRegion);
-	}
-	else
-	{
-		m_bIsNewCityAdded = FALSE;
-		CITIES recComparerCity;
-		recComparerCity.SetName(strCityName);
-		recComparerCity.SetRegion(strCityRegion);
 
-		CITIES* pCity = m_oCitiesArray
-			.FirstOrDefault([](CITIES& recCity, void* pComparerCity)
-				-> BOOL { return !StrCmpW(recCity.szName, static_cast<CITIES*>(pComparerCity)->szName) &&
-				!StrCmpW(recCity.szRegion, static_cast<CITIES*>(pComparerCity)->szRegion); },
-				static_cast<void*>(&recComparerCity));
+	CITIES recComparerCity;
+	recComparerCity.SetName(strCityName);
+	recComparerCity.SetRegion(strCityRegion);
 
-		m_recPerson.lCityId = pCity->lID;
-	}
+	const CITIES recCity = m_oCitiesArray
+		.First([](CITIES& recCity, void* pComparerCity)
+			-> BOOL { return !StrCmpW(recCity.szName, static_cast<CITIES*>(pComparerCity)->szName) &&
+			!StrCmpW(recCity.szRegion, static_cast<CITIES*>(pComparerCity)->szRegion); },
+			static_cast<void*>(&recComparerCity));
+
+	m_recPerson.lCityId = recCity.lID;
 
 	CDialog::OnOK();
-}
-
-BOOL CPersonsDialog::AreNewPhoneTypesAdded()
-{
-	return m_bAreNewPhoneTypesAdded;
-}
-
-BOOL CPersonsDialog::IsNewCityAdded()
-{
-	return m_bIsNewCityAdded;
 }
 
 void CPersonsDialog::RemovePhoneNumbersWarnings()
@@ -424,8 +346,7 @@ void CPersonsDialog::RemoveAllWarnings()
 	m_sttPersonsLastNameValidationInfo.ShowWindow(SW_HIDE);
 	m_sttPersonsUCNValidationInfo.ShowWindow(SW_HIDE);
 	m_sttPersonsAddressValidationInfo.ShowWindow(SW_HIDE);
-	m_sttPersonsCityNameValidationInfo.ShowWindow(SW_HIDE);
-	m_sttPersonsCityRegionValidationInfo.ShowWindow(SW_HIDE);
+	m_sttPersonsCityValidationInfo.ShowWindow(SW_HIDE);
 	RemovePhoneNumbersWarnings();
 }
 
@@ -433,44 +354,17 @@ void CPersonsDialog::PrepareForOperationRead()
 {
 	this->SetWindowText(_T("Person info"));
 
-#pragma region ReadPersonMain
 	m_edbFirstName.EnableWindow(FALSE);
 	m_edbMiddleName.EnableWindow(FALSE);
 	m_edbLastName.EnableWindow(FALSE);
-#pragma endregion
 
-#pragma region ReadPersonVitals
 	m_edbUCN.EnableWindow(FALSE);
 	m_edbAddress.EnableWindow(FALSE);
-#pragma endregion
 
-#pragma region ReadPersonCity
-	m_cmbCity.ShowWindow(SW_HIDE);
-	m_btnAddNewCity.ShowWindow(SW_HIDE);
-
-	m_sttCityName.SetWindowText(_T("City Name"));
-	m_sttCityRegion.SetWindowText(_T("City Region"));
-
-	m_sttCityName.ShowWindow(SW_SHOW);
-	m_sttCityRegion.ShowWindow(SW_SHOW);
-
-	m_edbCityName.EnableWindow(FALSE);
-	m_edbCityRegion.EnableWindow(FALSE);
-
-	m_edbCityName.SetWindowText(m_recPersonCity.szName);
-	m_edbCityRegion.SetWindowText(m_recPersonCity.szRegion);
-
-	m_edbCityName.ShowWindow(SW_SHOW);
-	m_edbCityRegion.ShowWindow(SW_SHOW);
-#pragma endregion
-
-#pragma region ReadPersonPhones
+	m_cmbCity.EnableWindow(FALSE);
 	m_cmbPhoneType.EnableWindow(FALSE);
-	m_btnAddNewPhoneType.ShowWindow(SW_HIDE);
-
 	m_edbPhoneNumber.EnableWindow(FALSE);
 	m_btnAddPhone.ShowWindow(SW_HIDE);
-#pragma endregion 
 }
 
 void CPersonsDialog::PrepareForOperationCreate()
@@ -482,20 +376,6 @@ void CPersonsDialog::PrepareForOperationUpdate()
 {
 	this->SetWindowText(_T("Update person"));
 
-}
-
-void CPersonsDialog::OnBnClickedBtnPersonsAddNewCity()
-{
-	m_bIsNewCityAdded = TRUE;
-
-	m_cmbCity.ShowWindow(SW_HIDE);
-	m_btnAddNewCity.ShowWindow(SW_HIDE);
-
-	m_sttCityName.SetWindowText(_T("City Name"));
-	m_sttCityRegion.ShowWindow(SW_SHOW);
-
-	m_edbCityName.ShowWindow(SW_SHOW);
-	m_edbCityRegion.ShowWindow(SW_SHOW);
 }
 
 void CPersonsDialog::RepairListCtrlIndexes(INT_PTR nIndex)
@@ -522,33 +402,15 @@ void CPersonsDialog::RemovePersonNumberAndRepairListCtrlData(PHONE_NUMBERS* pPho
 	}
 }
 
-void CPersonsDialog::OnBnClickedBtnPersonsAddNewType()
-{
-	m_bAreNewPhoneTypesAdded = TRUE;
-
-	m_cmbPhoneType.ShowWindow(SW_HIDE);
-	m_btnAddNewPhoneType.ShowWindow(SW_HIDE);
-
-	m_edbPhoneType.ShowWindow(SW_SHOW);
-}
-
-void CPersonsDialog::RevertOnBnClickedBtnPersonsAddNewType()
-{
-	m_cmbPhoneType.ShowWindow(SW_SHOW);
-	m_btnAddNewPhoneType.ShowWindow(SW_SHOW);
-
-	m_edbPhoneType.ShowWindow(SW_HIDE);
-}
-
 INT CPersonsDialog::ValidatePhoneType(const CString& strPhoneType, CString* strPhoneTypeValidationMessage)
 {
-	CStringValidator oValidator(PHONE_TYPE_MIN_LENGTH, _T(",*+"));
+	Utilities::CStringValidator oValidator(PHONE_TYPE_MIN_LENGTH, _T(",*+"));
 
 	const INT nValidationsResult = oValidator.ValidateString(
 		strPhoneType,
-		CStringValidator::StringValidationsNotAllowedChars |
-		CStringValidator::StringValidationsUnderSpecifiedLength |
-		CStringValidator::StringValidationsHasDigits
+		Utilities::CStringValidator::StringValidationsNotAllowedChars |
+		Utilities::CStringValidator::StringValidationsUnderSpecifiedLength |
+		Utilities::CStringValidator::StringValidationsHasDigits
 	);
 
 	if (strPhoneTypeValidationMessage && nValidationsResult)
@@ -559,13 +421,13 @@ INT CPersonsDialog::ValidatePhoneType(const CString& strPhoneType, CString* strP
 
 INT CPersonsDialog::ValidatePhoneNumber(const CString& strPhoneNumber, CString* strPhoneValidationMessage)
 {
-	CStringValidator oValidator(PHONE_NUMBER_MIN_LENGTH, _T(".,_!"));
+	Utilities::CStringValidator oValidator(PHONE_NUMBER_MIN_LENGTH, _T("`.,_!"));
 
 	const INT nValidationsResult = oValidator.ValidateString(
 		strPhoneNumber,
-		CStringValidator::StringValidationsNotAllowedChars |
-		CStringValidator::StringValidationsUnderSpecifiedLength |
-		CStringValidator::StringValidationsHasLetters
+		Utilities::CStringValidator::StringValidationsNotAllowedChars |
+		Utilities::CStringValidator::StringValidationsUnderSpecifiedLength |
+		Utilities::CStringValidator::StringValidationsHasLetters
 	);
 
 	if (strPhoneValidationMessage && nValidationsResult)
@@ -574,40 +436,14 @@ INT CPersonsDialog::ValidatePhoneNumber(const CString& strPhoneNumber, CString* 
 	return nValidationsResult;
 }
 
-void CPersonsDialog::CollectAndValidatePhoneTypeFromEditBox(CString& strPhoneType, INT& nPhoneTypeValidationResult)
-{
-	m_edbPhoneType.GetWindowText(strPhoneType);
-	CString strPhoneTypeValidationMessage;
-	nPhoneTypeValidationResult = ValidatePhoneType(strPhoneType, &strPhoneTypeValidationMessage);
-	if (nPhoneTypeValidationResult)
-	{
-		m_edbPhoneType.SetFocus();
-		m_sttPersonsPhoneTypeValidationInfo.ShowWindow(SW_SHOW);
-		m_sttPersonsPhoneTypeValidationInfo.SetWindowText(strPhoneTypeValidationMessage);
-	}
-}
-
-void CPersonsDialog::CollectAndValidatePhoneTypeFromComboBox(CString& strPhoneType, INT& nPhoneTypeValidationResult)
+void CPersonsDialog::CollectAndValidatePhoneTypeAndDisplayMessage(CString& strPhoneType, INT& nPhoneTypeValidationResult)
 {
 	m_cmbPhoneType.GetWindowText(strPhoneType);
 	if (strPhoneType.IsEmpty())
 	{
 		nPhoneTypeValidationResult++;
-		m_edbPhoneType.SetFocus();
 		m_sttPersonsPhoneTypeValidationInfo.ShowWindow(SW_SHOW);
 		m_sttPersonsPhoneTypeValidationInfo.SetWindowText(_T("selection cannot be empty"));
-	}
-}
-
-void CPersonsDialog::CollectAndValidatePhoneTypeAndDisplayMessage(CString& strPhoneType, INT& nPhoneTypeValidationResult)
-{
-	if (m_edbPhoneType.IsWindowVisible())
-	{
-		CollectAndValidatePhoneTypeFromEditBox(strPhoneType, nPhoneTypeValidationResult);
-	}
-	else
-	{
-		CollectAndValidatePhoneTypeFromComboBox(strPhoneType, nPhoneTypeValidationResult);
 	}
 }
 
@@ -647,30 +483,6 @@ void CPersonsDialog::OnBnClickedBtnPersonsAddPhone()
 			&strPhoneType
 		);
 
-	//if phone type is non existent -> new phone type is added or used
-	if (!pPhoneType)
-	{
-		pPhoneType = m_pNewPhoneTypes
-			->FirstOrDefault(
-				[](PHONE_TYPES& oFirst, void* pPhoneTypeName)
-				-> BOOL { return !StrCmp(oFirst.szType, static_cast<CString*>(pPhoneTypeName)->GetString()); },
-				&strPhoneType
-			);
-	}
-
-	//if phone type is still non existent -> new phone type is added
-	if (!pPhoneType)
-	{
-		pPhoneType = new PHONE_TYPES(); // 0x009be088
-		const INT_PTR nNewPhoneTypeIndex = m_pNewPhoneTypes->Add(pPhoneType);
-		m_bAreNewPhoneTypesAdded = TRUE;
-
-		pPhoneType->SetType(strPhoneType.GetString());
-		pPhoneType->lID = InvertIndex(nNewPhoneTypeIndex);
-
-		m_cmbPhoneType.AddString(pPhoneType->szType);
-	}
-
 	PHONE_NUMBERS recPhoneNumber;
 	recPhoneNumber.SetPhone(strPhoneNumber.GetString());
 	recPhoneNumber.lPhoneTypeId = pPhoneType->lID;
@@ -682,9 +494,7 @@ void CPersonsDialog::OnBnClickedBtnPersonsAddPhone()
 	m_lscPhoneNumbers.SetItemData(nInsertIndex, nPersonNumbersArrayIndex);
 
 	m_cmbPhoneType.SetTopIndex(-1);
-	m_edbPhoneType.SetWindowText(L"");
 	m_edbPhoneNumber.SetWindowText(L"");
-	RevertOnBnClickedBtnPersonsAddNewType();
 }
 
 void CPersonsDialog::OnBnClickedBtnPersonsRemoveNumber()
@@ -717,30 +527,19 @@ void CPersonsDialog::OnBnClickedBtnPersonsEditNumber()
 			pPhoneNumber
 		);
 
-	if (!pPhoneType)
-	{
-		pPhoneType = m_pNewPhoneTypes
-			->FirstOrDefault(
-				[](PHONE_TYPES& oFirst, void* pPhoneNumber)-> BOOL { return oFirst.lID == static_cast<PHONE_NUMBERS*>(pPhoneNumber)->lPhoneTypeId; },
-				pPhoneNumber
-			);
-	}
+	CPhoneNumbersDialog oPhonenumbersDialog(*pPhoneNumber, *pPhoneType, m_oPhoneTypesArray);
+	if (oPhonenumbersDialog.DoModal() != IDOK)
+		return;
 
-	if (m_edbPhoneType.IsWindowVisible())
-		m_edbPhoneType.SetWindowText(pPhoneType->szType);
-	else
-		m_cmbPhoneType.SelectString(0, pPhoneType->szType);
-
-	m_edbPhoneNumber.SetWindowText(pPhoneNumber->szPhone);
-
-	RemovePersonNumberAndRepairListCtrlData(pPhoneNumber);
+	m_lscPhoneNumbers.SetItemText(nIndex, PHONE_NUMBER_TYPE_COLUMN, pPhoneType->szType);
+	m_lscPhoneNumbers.SetItemText(nIndex, PHONE_NUMBER_NUMBER_COLUMN, pPhoneNumber->szPhone);
 }
 
 void CPersonsDialog::OnLvnItemchangedLscPersonsPhoneNumbers(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	if (m_eOperation != OperationsRead)
+	if (m_eOperation != Utilities::OperationsRead)
 	{
-		LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+		const LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 
 		if (pNMLV->uNewState & LVIS_SELECTED)
 		{

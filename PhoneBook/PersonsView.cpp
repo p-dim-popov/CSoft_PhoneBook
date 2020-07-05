@@ -9,12 +9,23 @@
 #define PERSON_FIRST_NAME_COLUMN 0
 #define PERSON_MIDDLE_NAME_COLUMN 1
 #define PERSON_LAST_NAME_COLUMN 2
+#define PERSON_UCN_COLUMN 3
+#define PERSON_CITY_COLUMN 4
+#define PERSON_ADDRESS_COLUMN 5
+
 #define PERSON_FIRST_NAME_COLUMN_LABEL _T("First name")
 #define PERSON_MIDDLE_NAME_COLUMN_LABEL _T("Middle name")
 #define PERSON_LAST_NAME_COLUMN_LABEL _T("Last name")
-#define PERSON_FIRST_NAME_COLUMN_WIDTH 150
-#define PERSON_MIDDLE_NAME_COLUMN_WIDTH 150
-#define PERSON_LAST_NAME_COLUMN_WIDTH 150
+#define PERSON_UCN_COLUMN_LABEL _T("UCN")
+#define PERSON_CITY_COLUMN_LABEL _T("City - Region")
+#define PERSON_ADDRESS_COLUMN_LABEL _T("Address")
+
+#define PERSON_FIRST_NAME_COLUMN_WIDTH 100
+#define PERSON_MIDDLE_NAME_COLUMN_WIDTH 100
+#define PERSON_LAST_NAME_COLUMN_WIDTH 100
+#define PERSON_UCN_COLUMN_WIDTH 100
+#define PERSON_CITY_COLUMN_WIDTH 150
+#define PERSON_ADDRESS_COLUMN_WIDTH 200
 
 #define GENERAL_ERROR_MESSAGE _T("Sorry for the inconvenience but error ocurred! Try refreshing the list.")
 
@@ -45,11 +56,17 @@ void CPersonsView::OnInitialUpdate()
 	oListCtrl.InsertColumn(PERSON_FIRST_NAME_COLUMN, PERSON_FIRST_NAME_COLUMN_LABEL);
 	oListCtrl.InsertColumn(PERSON_MIDDLE_NAME_COLUMN, PERSON_MIDDLE_NAME_COLUMN_LABEL);
 	oListCtrl.InsertColumn(PERSON_LAST_NAME_COLUMN, PERSON_LAST_NAME_COLUMN_LABEL);
+	oListCtrl.InsertColumn(PERSON_UCN_COLUMN, PERSON_UCN_COLUMN_LABEL);
+	oListCtrl.InsertColumn(PERSON_CITY_COLUMN, PERSON_CITY_COLUMN_LABEL);
+	oListCtrl.InsertColumn(PERSON_ADDRESS_COLUMN, PERSON_ADDRESS_COLUMN_LABEL);
 
 	// Задаване на ширина на колоните
 	oListCtrl.SetColumnWidth(PERSON_FIRST_NAME_COLUMN, PERSON_FIRST_NAME_COLUMN_WIDTH);
 	oListCtrl.SetColumnWidth(PERSON_MIDDLE_NAME_COLUMN, PERSON_MIDDLE_NAME_COLUMN_WIDTH);
 	oListCtrl.SetColumnWidth(PERSON_LAST_NAME_COLUMN, PERSON_LAST_NAME_COLUMN_WIDTH);
+	oListCtrl.SetColumnWidth(PERSON_UCN_COLUMN, PERSON_UCN_COLUMN_WIDTH);
+	oListCtrl.SetColumnWidth(PERSON_CITY_COLUMN, PERSON_CITY_COLUMN_WIDTH);
+	oListCtrl.SetColumnWidth(PERSON_ADDRESS_COLUMN, PERSON_ADDRESS_COLUMN_WIDTH);
 
 	// Допълнителна стилизация на контролата
 	oListCtrl.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
@@ -69,13 +86,13 @@ void CPersonsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 		switch (lHint)
 		{
-		case OperationsCreate:
+		case Utilities::OperationsCreate:
 			UpdateOnOperationCreate(dwPersonItemData);
 			break;
-		case OperationsUpdate:
+		case Utilities::OperationsUpdate:
 			UpdateOnOperationUpdate(dwPersonItemData);
 			break;
-		case OperationsDelete:
+		case Utilities::OperationsDelete:
 			UpdateOnOperationDelete(dwPersonItemData);
 			break;
 		default:
@@ -107,8 +124,12 @@ void CPersonsView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 
 	PERSONS* pPerson = reinterpret_cast<PERSONS*>(oListCtrl.GetItemData(nIndex));
 
-	CPhoneNumbersArray oPersonPhoneNumbersArray(pPersonsDocument->GetAllPhonesForPersonByID(pPerson->lID));
-	oPersonPhoneNumbersArray.EnableAutoDelete(FALSE);
+	CPhoneNumbersArray oPersonPhoneNumbersArray;
+	if (!pPersonsDocument->GetAllPhonesForPersonByID(pPerson->lID, oPersonPhoneNumbersArray))
+	{
+		MessageBox(_T("Error getting person's phone numbers."), _T("Information"));
+		return;
+	}
 
 	CITIES* pPersonCity = pPersonsDocument
 		->GetAllCities()
@@ -118,7 +139,7 @@ void CPersonsView::OnLvnItemActivate(NMHDR* pNMHDR, LRESULT* pResult)
 	CPhoneTypesArray& oPhoneTypesArray = pPersonsDocument->GetAllPhoneTypes();
 	CCitiesArray& oCitiesArray = pPersonsDocument->GetAllCities();
 
-	CPersonsDialog oPersonsDialog(OperationsRead, *pPerson, oPersonPhoneNumbersArray, *pPersonCity, oPhoneTypesArray, oCitiesArray);
+	CPersonsDialog oPersonsDialog(Utilities::OperationsRead, *pPerson, oPersonPhoneNumbersArray, *pPersonCity, oPhoneTypesArray, oCitiesArray);
 
 	oPersonsDialog.DoModal();
 
@@ -155,7 +176,7 @@ void CPersonsView::OnContextMenuBtnDelete()
 	if (!bIsSuccessful)
 	{
 		MessageBox(GENERAL_ERROR_MESSAGE, _T("Информация"), MB_ICONINFORMATION | MB_OK);
-		OnContextMenuBtnRefresh();
+		Refresh();
 	}
 }
 
@@ -176,7 +197,7 @@ void CPersonsView::OnContextMenuBtnInsert()
 	CPhoneTypesArray oNewPhoneTypesArray;
 
 	CPersonsDialog oPersonsDialog(
-		OperationsCreate,
+		Utilities::OperationsCreate,
 
 		recNewPerson,
 		oNewPersonPhoneNumbers,
@@ -191,25 +212,15 @@ void CPersonsView::OnContextMenuBtnInsert()
 	if (oPersonsDialog.DoModal() != IDOK)
 		return;
 
-	CPhoneTypesArray* pNewPhoneTypesArray = oPersonsDialog.AreNewPhoneTypesAdded()
-		? &oNewPhoneTypesArray
-		: NULL;
-
-	CITIES* pNewCity = oPersonsDialog.IsNewCityAdded()
-		? &recNewPersonCity
-		: NULL;
-
 	const BOOL bIsSuccessful = pPersonsDocument->AddPerson(
 		recNewPerson,
-		oNewPersonPhoneNumbers,
-		pNewPhoneTypesArray,
-		pNewCity
+		oNewPersonPhoneNumbers
 	);
 
 	if (!bIsSuccessful)
 	{
 		MessageBox(GENERAL_ERROR_MESSAGE, _T("Information"), MB_ICONINFORMATION | MB_OK);
-		OnContextMenuBtnRefresh();
+		Refresh();
 	}
 }
 
@@ -224,10 +235,14 @@ void CPersonsView::OnContextMenuBtnUpdate()
 		return;
 	}
 
-#pragma region CurrentPersonData
 	PERSONS* pOldPerson = reinterpret_cast<PERSONS*>(oListCtrl.GetItemData(nIndex));
-	CPhoneNumbersArray oOldPersonPhoneNumbers = pPersonsDocument
-		->GetAllPhonesForPersonByID(pOldPerson->lID);
+	CPhoneNumbersArray oPersonOldPhoneNumbers(FALSE);
+	if (!pPersonsDocument->GetAllPhonesForPersonByID(pOldPerson->lID, oPersonOldPhoneNumbers))
+	{
+		MessageBox(_T("Error getting person's phone numbers."), _T("Information"));
+		return;
+	}
+
 	CITIES& recOldPersonCity = pPersonsDocument
 		->GetAllCities()
 		.First(
@@ -235,52 +250,34 @@ void CPersonsView::OnContextMenuBtnUpdate()
 			-> BOOL { return recCity.lID == *static_cast<long*>(pID); },
 			&pOldPerson->lCityId
 		);
-#pragma endregion
 
-#pragma region ToBeUpdatedPersonData
-	PERSONS recUpdatedPerson = *pOldPerson;
-	CPhoneNumbersArray oUpdatedPersonPhoneNumbers(oOldPersonPhoneNumbers);
-	CITIES recToBeUpdatedPersonCity = recOldPersonCity;
-#pragma endregion 
+	PERSONS recPersonUpdate = *pOldPerson;
+	CPhoneNumbersArray oPersonPhoneNumbersUpdate;
+	oPersonPhoneNumbersUpdate.DeepCopy(oPersonOldPhoneNumbers);
+	
+	CITIES recPersonCityUpdate = recOldPersonCity;
 
 	CPhoneTypesArray oPhoneTypesArray(pPersonsDocument->GetAllPhoneTypes());
 	oPhoneTypesArray.EnableAutoDelete(FALSE);
 	CCitiesArray oCitiesArray(pPersonsDocument->GetAllCities());
 	oCitiesArray.EnableAutoDelete(FALSE);
 
-	CPhoneTypesArray oNewPhoneTypesArray(FALSE);
-
 	CPersonsDialog oPersonsDialog(
-		OperationsCreate,
+		Utilities::OperationsCreate,
 
-		recUpdatedPerson,
-		oUpdatedPersonPhoneNumbers,
-		recToBeUpdatedPersonCity,
+		recPersonUpdate,
+		oPersonPhoneNumbersUpdate,
+		recPersonCityUpdate,
 
 		oPhoneTypesArray,
-		oCitiesArray,
-
-		&oNewPhoneTypesArray
+		oCitiesArray
 	);
 
 	if (oPersonsDialog.DoModal() != IDOK)
 		return;
 
-	CPhoneTypesArray* pNewPhoneTypesArray = oPersonsDialog.AreNewPhoneTypesAdded()
-		? &oNewPhoneTypesArray
-		: NULL;
-
-	CITIES* pNewCity = oPersonsDialog.IsNewCityAdded()
-		? &recToBeUpdatedPersonCity
-		: NULL;
-
-	BOOL bAreUpdatesMade =
-		!pOldPerson->Compare(recUpdatedPerson) ||
-		!recOldPersonCity.Compare(recToBeUpdatedPersonCity) ||
-		oOldPersonPhoneNumbers.GetSize() != oUpdatedPersonPhoneNumbers.GetSize();
-
 	CPhoneNumbersArray oDeletedPhoneNumbersArray(
-		oOldPersonPhoneNumbers
+		oPersonOldPhoneNumbers
 		.Where( // phone numbers does not exist in
 			[](PHONE_NUMBERS& recOldPhoneNumber, void* pUpdatedPhoneNumbersArray)
 			-> BOOL { return static_cast<CPhoneNumbersArray*>(pUpdatedPhoneNumbersArray)->IndexOf(
@@ -288,20 +285,20 @@ void CPersonsView::OnContextMenuBtnUpdate()
 				-> BOOL { return recNewPhoneNumber.lID == *static_cast<long*>(pPhoneNumberID); },
 				&recOldPhoneNumber.lID
 			) == -1; },
-			&oUpdatedPersonPhoneNumbers
+			&oPersonPhoneNumbersUpdate
 		)
 	);
 
 	CPhoneNumbersArray oUpdatedPhoneNumbersArray(FALSE);
 	CPhoneNumbersArray oNewPhoneNumbersArray(FALSE);
-	for (INT_PTR i = 0; i < oUpdatedPersonPhoneNumbers.GetSize(); i++)
+	for (INT_PTR i = 0; i < oPersonPhoneNumbersUpdate.GetSize(); i++)
 	{
-		PHONE_NUMBERS* pNewPhoneNumber = oUpdatedPersonPhoneNumbers.GetAt(i);
-		PHONE_NUMBERS* pOldPhoneNumber = oOldPersonPhoneNumbers
+		PHONE_NUMBERS* pNewPhoneNumber = oPersonPhoneNumbersUpdate.GetAt(i);
+		PHONE_NUMBERS* pOldPhoneNumber = oPersonOldPhoneNumbers
 			.FirstOrDefault(
 				[](PHONE_NUMBERS& recOldPhoneNumber, void* pID)
 				-> BOOL { return recOldPhoneNumber.lID == *static_cast<long*>(pID);},
-				& oUpdatedPersonPhoneNumbers.GetAt(i)->lID
+				&oPersonPhoneNumbersUpdate.GetAt(i)->lID
 			);
 
 		if (!pOldPhoneNumber) // it is new =>
@@ -318,39 +315,23 @@ void CPersonsView::OnContextMenuBtnUpdate()
 		oUpdatedPhoneNumbersArray.Add(pNewPhoneNumber);
 	}
 
-	bAreUpdatesMade = oDeletedPhoneNumbersArray.GetSize() || oUpdatedPersonPhoneNumbers.GetSize() || oNewPhoneNumbersArray.GetSize()
-		? TRUE
-		: bAreUpdatesMade;
-
-	if (!bAreUpdatesMade)
-	{
-		return;
-	}
-	
 	const BOOL bIsSuccessful = pPersonsDocument->EditPerson(
-		recUpdatedPerson,
+		recPersonUpdate,
 		oDeletedPhoneNumbersArray,
 		oUpdatedPhoneNumbersArray,
-		oNewPhoneNumbersArray,
-		pNewPhoneTypesArray,
-		pNewCity
+		oNewPhoneNumbersArray
 	);
 
 	if (!bIsSuccessful)
 	{
 		MessageBox(GENERAL_ERROR_MESSAGE, _T("Information"), MB_ICONINFORMATION | MB_OK);
-		OnContextMenuBtnRefresh();
+		Refresh();
 	}
 }
 
 void CPersonsView::OnContextMenuBtnRefresh()
 {
-	// Ъпдейт при ползване от повече от една инстанция на приложението
-	CPersonsDocument* pPersonsDocument = GetDocument();
-	pPersonsDocument->RefreshData(FALSE);
-
-	ClearRowsData();
-	LoadRowsData();
+	Refresh();
 }
 #pragma endregion
 
@@ -399,6 +380,16 @@ void CPersonsView::OnContextMenu(CWnd* pWnd, CPoint oMousePos)
 	}
 }
 
+void CPersonsView::Refresh()
+{
+	// Ъпдейт при ползване от повече от една инстанция на приложението
+	CPersonsDocument* pPersonsDocument = GetDocument();
+	pPersonsDocument->RefreshData(FALSE);
+
+	ClearRowsData();
+	LoadRowsData();
+}
+
 void CPersonsView::LoadRowsData()
 {
 	CListCtrl& oListCtrl = GetListCtrl();
@@ -408,16 +399,23 @@ void CPersonsView::LoadRowsData()
 
 	// Данни - PERSONS
 	CPersonsArray& oPersonsArray = pPersonsDocument->GetAllPersons();
+	CCitiesArray& oCitiesArray = pPersonsDocument->GetAllCities();
 
 	// Зареждане на всички данни в списък в лист контролата
 	for (INT_PTR i = 0; i < oPersonsArray.GetCount(); i++)
 	{
 		PERSONS* pPerson = oPersonsArray.GetAt(i);
-
+		CITIES& recCity = oCitiesArray
+			.First([](CITIES& recCity, void* pID) -> BOOL { return recCity.lID == *static_cast<long*>(pID); }, &pPerson->lCityId);
+		CString strCityRegionColumnText;
+		strCityRegionColumnText.Format(_T("%s - %s"), recCity.szName, recCity.szRegion);
 		// Вмъкване на редове
 		const INT nInsertIndex = oListCtrl.InsertItem(i, pPerson->szFirstName);
 		oListCtrl.SetItemText(nInsertIndex, PERSON_MIDDLE_NAME_COLUMN, pPerson->szMiddleName);
 		oListCtrl.SetItemText(nInsertIndex, PERSON_LAST_NAME_COLUMN, pPerson->szLastName);
+		oListCtrl.SetItemText(nInsertIndex, PERSON_UCN_COLUMN, pPerson->szUCN);
+		oListCtrl.SetItemText(nInsertIndex, PERSON_CITY_COLUMN, strCityRegionColumnText.GetString());
+		oListCtrl.SetItemText(nInsertIndex, PERSON_ADDRESS_COLUMN, pPerson->szAddress);
 		oListCtrl.SetItemData(nInsertIndex, reinterpret_cast<DWORD_PTR>(pPerson));
 	}
 }
@@ -442,26 +440,46 @@ INT CPersonsView::GetPersonIndexInListCtrlByItemData(const DWORD_PTR dwData) con
 #pragma region OnUpdateCases
 void CPersonsView::UpdateOnOperationCreate(const DWORD_PTR dwPersonItemData)
 {
+	CPersonsDocument* pPersonsDocument = GetDocument();
+	CCitiesArray& oCitiesArray = pPersonsDocument->GetAllCities();
+
 	CListCtrl& oListCtrl = GetListCtrl();
 	PERSONS* pPerson = reinterpret_cast<PERSONS*>(dwPersonItemData);
+	CITIES& recCity = oCitiesArray
+		.First([](CITIES& recCity, void* pID) -> BOOL { return recCity.lID == *static_cast<long*>(pID); }, &pPerson->lCityId);
+	CString strCityRegionColumnText;
+	strCityRegionColumnText.Format(_T("%s - %s"), recCity.szName, recCity.szRegion);
 
 	const INT nInsertIndex = oListCtrl.InsertItem(oListCtrl.GetItemCount(), pPerson->szFirstName);
 	oListCtrl.SetItemText(nInsertIndex, PERSON_MIDDLE_NAME_COLUMN, pPerson->szMiddleName);
 	oListCtrl.SetItemText(nInsertIndex, PERSON_LAST_NAME_COLUMN, pPerson->szLastName);
+	oListCtrl.SetItemText(nInsertIndex, PERSON_UCN_COLUMN, pPerson->szUCN);
+	oListCtrl.SetItemText(nInsertIndex, PERSON_CITY_COLUMN, strCityRegionColumnText.GetString());
+	oListCtrl.SetItemText(nInsertIndex, PERSON_ADDRESS_COLUMN, pPerson->szAddress);
 	oListCtrl.SetItemData(nInsertIndex, dwPersonItemData);
 
 }
 
 void CPersonsView::UpdateOnOperationUpdate(const DWORD_PTR dwPersonItemData)
 {
+	CPersonsDocument* pPersonsDocument = GetDocument();
+	CCitiesArray& oCitiesArray = pPersonsDocument->GetAllCities();
+
 	CListCtrl& oListCtrl = GetListCtrl();
 	PERSONS* pPerson = reinterpret_cast<PERSONS*>(dwPersonItemData);
+	CITIES& recCity = oCitiesArray
+		.First([](CITIES& recCity, void* pID) -> BOOL { return recCity.lID == *static_cast<long*>(pID); }, &pPerson->lCityId);
+	CString strCityRegionColumnText;
+	strCityRegionColumnText.Format(_T("%s - %s"), recCity.szName, recCity.szRegion);
 
 	const INT nIndexInListCtrl = GetPersonIndexInListCtrlByItemData(dwPersonItemData);
 
 	oListCtrl.SetItemText(nIndexInListCtrl, PERSON_FIRST_NAME_COLUMN, pPerson->szFirstName);
 	oListCtrl.SetItemText(nIndexInListCtrl, PERSON_MIDDLE_NAME_COLUMN, pPerson->szMiddleName);
 	oListCtrl.SetItemText(nIndexInListCtrl, PERSON_LAST_NAME_COLUMN, pPerson->szLastName);
+	oListCtrl.SetItemText(nIndexInListCtrl, PERSON_UCN_COLUMN, pPerson->szUCN);
+	oListCtrl.SetItemText(nIndexInListCtrl, PERSON_CITY_COLUMN, strCityRegionColumnText.GetString());
+	oListCtrl.SetItemText(nIndexInListCtrl, PERSON_ADDRESS_COLUMN, pPerson->szAddress);
 }
 
 void CPersonsView::UpdateOnOperationDelete(const DWORD_PTR dwPersonItemData)

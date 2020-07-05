@@ -21,8 +21,8 @@ CPersonsTableAccessor::~CPersonsTableAccessor()
 // Constructor / Destructor
 // ----------------
 
-CPersonsTable::CPersonsTable(CDataSource* pDataSource, CSession* pSession) :
-	CTable<PERSONS, CPersonsTableAccessor>(pDataSource, pSession, _T("PERSONS"))
+CPersonsTable::CPersonsTable() :
+	CTable<PERSONS, CPersonsTableAccessor>(_T("PERSONS"))
 {
 }
 

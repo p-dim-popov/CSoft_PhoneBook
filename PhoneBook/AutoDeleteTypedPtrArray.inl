@@ -10,15 +10,6 @@ CAutoDeleteTypedPtrArray<TYPE>::CAutoDeleteTypedPtrArray(BOOL bEnableAutoDelete)
 {
 }
 
-template<typename TYPE>
-CAutoDeleteTypedPtrArray<TYPE>::CAutoDeleteTypedPtrArray(CAutoDeleteTypedPtrArray<TYPE>& oArray) :
-	m_bAutoDeleteEnabled(oArray.m_bAutoDeleteEnabled)
-{
-	for (INT_PTR i = 0; i < oArray.GetCount(); i++)
-	{
-		this->Add(oArray.GetAt(i));
-	}
-}
 
 template <typename TYPE>
 CAutoDeleteTypedPtrArray<TYPE>::CAutoDeleteTypedPtrArray(const CAutoDeleteTypedPtrArray<TYPE>& oArray) :
@@ -147,26 +138,6 @@ INT CAutoDeleteTypedPtrArray<TYPE>::BinarySearch(int nBeg, int nEnd,
 }
 
 template <typename TYPE>
-TYPE* CAutoDeleteTypedPtrArray<TYPE>::FirstOrDefault()
-{
-	if (this->GetSize() > 0)
-	{
-		return NULL;
-	}
-
-	return reinterpret_cast<TYPE*>(this->GetAt(0));
-}
-
-template <typename TYPE>
-TYPE& CAutoDeleteTypedPtrArray<TYPE>::First()
-{
-	TYPE* pResult = this->FirstOrDefault();
-	ASSERT(pResult);
-	return *pResult;
-}
-
-
-template <typename TYPE>
 TYPE* CAutoDeleteTypedPtrArray<TYPE>::FirstOrDefault(BOOL(*funcPredicate)(TYPE& oFirst, void* pCapture), void* pCapture, BOOL bIsSorted)
 {
 	TYPE* pResult = NULL;
@@ -261,4 +232,15 @@ template <typename TYPE>
 INT_PTR CAutoDeleteTypedPtrArray<TYPE>::Add(TYPE* pItem)
 {
 	return CTypedPtrArray<CPtrArray, ICompare<TYPE>*>::Add(reinterpret_cast<ICompare<TYPE>*>(pItem));
+}
+
+template <typename TYPE>
+void CAutoDeleteTypedPtrArray<TYPE>::DeepCopy(const CAutoDeleteTypedPtrArray<TYPE>& oArray)
+{
+	this->SetSize(oArray.GetSize());
+
+	for (INT_PTR i = 0; i < oArray.GetSize(); i++)
+	{
+		this->SetAt(i, new TYPE(*oArray.GetAt(i)));
+	}
 }

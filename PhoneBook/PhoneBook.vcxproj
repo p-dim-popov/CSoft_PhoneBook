@@ -199,6 +199,7 @@
     <ClInclude Include="PersonsDialog.h" />
     <ClInclude Include="PersonsDocument.h" />
     <ClInclude Include="PersonsTable.h" />
+    <ClInclude Include="PhoneNumbersDialog.h" />
     <ClInclude Include="PhoneNumbersTable.h" />
     <ClInclude Include="PhoneTypesData.h" />
     <ClInclude Include="PhoneTypesDialog.h" />
@@ -214,7 +215,6 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Structures.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Typedefs.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
@@ -239,6 +239,7 @@
     <ClCompile Include="PhoneBook.cpp" />
     <ClCompile Include="PhoneBookDoc.cpp" />
     <ClCompile Include="PhoneBookView.cpp" />
+    <ClCompile Include="PhoneNumbersDialog.cpp" />
     <ClCompile Include="PhoneNumbersTable.cpp" />
     <ClCompile Include="PhoneTypesData.cpp" />
     <ClCompile Include="PhoneTypesDialog.cpp" />

@@ -41,15 +41,6 @@ class CCitiesTable : public ::CTable<CITIES, CCitiesTableAccessor>
 	// Constructor / Destructor
 	// ----------------
 public:
-	explicit CCitiesTable(CDataSource* pDataSource, CSession* pSession);
-
-	// Methods
-	// ----------------
-public:
-	BOOL SelectWhereName(const TCHAR* pszCityName, CITIES& recCity);
-
-	// Members
-	// ----------------
-private:
+	CCitiesTable();
 };
 

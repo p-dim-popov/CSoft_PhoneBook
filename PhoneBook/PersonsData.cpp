@@ -9,12 +9,20 @@
 // Constructor / Destructor
 // ----------------
 
-CPersonsData::CPersonsData() :
-	m_oPersonsTable(CPersonsTable(&m_oDataSource, &m_oSession)),
-	m_oPhoneNumbersTable(CPhoneNumbersTable(&m_oDataSource, &m_oSession)),
-	m_oPhoneTypesTable(CPhoneTypesTable(&m_oDataSource, &m_oSession)),
-	m_oCitiesTable(CCitiesTable(&m_oDataSource, &m_oSession))
+
+CPersonsData::CPersonsData()
 {
+	m_oPersonsTable.SetDataSource(&m_oDataSource);
+	m_oPersonsTable.SetSession(&m_oSession);
+
+	m_oPhoneNumbersTable.SetDataSource(&m_oDataSource);
+	m_oPhoneNumbersTable.SetSession(&m_oSession);
+
+	m_oPhoneTypesTable.SetDataSource(&m_oDataSource);
+	m_oPhoneTypesTable.SetSession(&m_oSession);
+
+	m_oCitiesTable.SetDataSource(&m_oDataSource);
+	m_oCitiesTable.SetSession(&m_oSession);
 }
 
 CPersonsData::~CPersonsData()
@@ -63,17 +71,6 @@ BOOL CPersonsData::UpdateWhereID(const long lID, PERSONS& recPerson)
 	return TRUE;
 }
 
-long CPersonsData::GetCorrectPhoneTypeID(long lPhoneTypeID, CMap<long, long, long, long>& oPhoneTypesIDsMap)
-{
-	if (!IsPhoneNumberWithEncodedPhoneTypeID(lPhoneTypeID, oPhoneTypesIDsMap))
-		return lPhoneTypeID;
-
-	long lNewID = -1;
-	oPhoneTypesIDsMap.Lookup(lPhoneTypeID, lNewID);
-
-	return lNewID;
-}
-
 BOOL CPersonsData::InsertPhoneTypes(CPhoneTypesArray& oPhoneTypesArray, CMap<long, long, long, long>& oNewPhoneTypesOldIndexesMap)
 {
 	for (INT_PTR i = 0; i < oPhoneTypesArray.GetSize(); i++)
@@ -92,7 +89,7 @@ BOOL CPersonsData::InsertPhoneTypes(CPhoneTypesArray& oPhoneTypesArray, CMap<lon
 	return TRUE;
 }
 
-BOOL CPersonsData::InsertPersonWithData(PERSONS& recPerson, CPhoneNumbersArray& oPersonPhoneNumbersArray, CPhoneTypesArray* pNewPhoneTypesArray, CITIES* pNewCity)
+BOOL CPersonsData::InsertPersonWithData(PERSONS& recPerson, CPhoneNumbersArray& oPersonPhoneNumbersArray)
 {
 	HRESULT hResult = S_OK;
 	if (!m_oDataSource.m_spInit || !m_oSession.m_spOpenRowset)
@@ -109,16 +106,6 @@ BOOL CPersonsData::InsertPersonWithData(PERSONS& recPerson, CPhoneNumbersArray& 
 		return FALSE;
 	}
 
-	if (pNewCity && !InsertCity(pNewCity))
-	{
-		TRACE(_T("Inserting city in data level failed."));
-
-		return FALSE;
-	}
-
-	if (pNewCity)
-		recPerson.lCityId = pNewCity->lID;
-
 	BOOL bResult = m_oPersonsTable.Insert(recPerson);
 	if (!bResult)
 	{
@@ -127,19 +114,9 @@ BOOL CPersonsData::InsertPersonWithData(PERSONS& recPerson, CPhoneNumbersArray& 
 		return FALSE;
 	}
 
-	CMap<long, long, long, long> oNewPhoneTypesOldIndexesMap;
-	if (pNewPhoneTypesArray && !InsertPhoneTypes(*pNewPhoneTypesArray, oNewPhoneTypesOldIndexesMap))
-	{
-		TRACE(_T("Inserting phone type in data level failed."));
-
-		return FALSE;
-	}
-
 	for (INT_PTR i = 0; i < oPersonPhoneNumbersArray.GetSize(); i++)
 	{
 		PHONE_NUMBERS* pPhoneNumber = oPersonPhoneNumbersArray.GetAt(i);
-
-		pPhoneNumber->lPhoneTypeId = GetCorrectPhoneTypeID(pPhoneNumber->lPhoneTypeId, oNewPhoneTypesOldIndexesMap);
 
 		pPhoneNumber->lPersonId = recPerson.lID;
 
@@ -242,19 +219,6 @@ BOOL CPersonsData::SelectAllCities(CCitiesArray& oCitiesArray)
 	return TRUE;
 }
 
-BOOL CPersonsData::SelectCityWhereName(const TCHAR* pszCityName, CITIES& recCity)
-{
-	const BOOL bResult = m_oCitiesTable.SelectWhereName(pszCityName, recCity);
-
-	if (!bResult)
-	{
-		TRACE(_T("Getting city with name \"%s\" in data level failed."), pszCityName);
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
 BOOL CPersonsData::InsertPhoneType(PHONE_TYPES* pPhoneType)
 {
 	if (!pPhoneType)
@@ -304,9 +268,7 @@ BOOL CPersonsData::UpdatePersonWithData(
 	PERSONS& recPerson,
 	CPhoneNumbersArray& oDeletedPhoneNumbersArray,
 	CPhoneNumbersArray& oUpdatedPhoneNumbersArray,
-	CPhoneNumbersArray& oNewPhoneNumbersArray,
-	CPhoneTypesArray* pNewPhoneTypesArray,
-	CITIES* pNewCity
+	CPhoneNumbersArray& oNewPhoneNumbersArray
 )
 {
 	HRESULT hResult = S_OK;
@@ -325,16 +287,6 @@ BOOL CPersonsData::UpdatePersonWithData(
 		return FALSE;
 	}
 
-	if (pNewCity && !InsertCity(pNewCity))
-	{
-		TRACE(_T("Inserting city in data level failed."));
-
-		return FALSE;
-	}
-
-	if (pNewCity)
-		recPerson.lCityId = pNewCity->lID;
-
 	BOOL bResult = m_oPersonsTable.UpdateWhereID(recPerson.lID, recPerson, TRUE);
 	if (!bResult)
 	{
@@ -342,21 +294,11 @@ BOOL CPersonsData::UpdatePersonWithData(
 		return FALSE;
 	}
 
-	CMap<long, long, long, long> oNewPhoneTypesOldIndexesMap;
-	if (pNewPhoneTypesArray && !InsertPhoneTypes(*pNewPhoneTypesArray, oNewPhoneTypesOldIndexesMap))
-	{
-		TRACE(_T("Inserting phone type in data level failed. Check logs."));
-
-		return FALSE;
-	}
-
 	for (INT_PTR i = 0; i < oUpdatedPhoneNumbersArray.GetSize(); i++)
 	{
 		PHONE_NUMBERS* pPhoneNumber = oUpdatedPhoneNumbersArray.GetAt(i);
 
-		pPhoneNumber->lPhoneTypeId = GetCorrectPhoneTypeID(pPhoneNumber->lPhoneTypeId, oNewPhoneTypesOldIndexesMap);
-
-		bResult = m_oPhoneNumbersTable.UpdateWhereID(pPhoneNumber->lID, *pPhoneNumber);
+		bResult = m_oPhoneNumbersTable.UpdateWhereID(pPhoneNumber->lID, *pPhoneNumber, TRUE);
 		if (!bResult)
 		{
 			TRACE(_T("Updating phone number in data level failed."));
@@ -368,8 +310,6 @@ BOOL CPersonsData::UpdatePersonWithData(
 	for (INT_PTR i = 0; i < oNewPhoneNumbersArray.GetSize(); i++)
 	{
 		PHONE_NUMBERS* pPhoneNumber = oNewPhoneNumbersArray.GetAt(i);
-
-		pPhoneNumber->lPhoneTypeId = GetCorrectPhoneTypeID(pPhoneNumber->lPhoneTypeId, oNewPhoneTypesOldIndexesMap);
 
 		pPhoneNumber->lPersonId = recPerson.lID;
 
@@ -389,12 +329,12 @@ BOOL CPersonsData::UpdatePersonWithData(
 		bResult = m_oPhoneNumbersTable.DeleteWhereID(pPhoneNumber->lID);
 		if (!bResult)
 		{
-			TRACE(_T("Inserting phone number in data level failed."));
+			TRACE(_T("Deleting phone number in data level failed."));
 
 			return FALSE;
 		}
 	}
-	
+
 	// Приключване на транзакция
 	hResult = m_oSession.Commit();
 	if (FAILED(hResult))
@@ -407,16 +347,3 @@ BOOL CPersonsData::UpdatePersonWithData(
 	return TRUE;
 
 }
-
-BOOL CPersonsData::IsPhoneNumberWithEncodedPhoneTypeID(long lPhoneTypeID, CMap<long, long, long, long>& oPhoneTypesIDsMap)
-{
-	if (lPhoneTypeID >= 0)
-		return FALSE;
-
-	long lID = -1;
-	if (!oPhoneTypesIDsMap.Lookup(lPhoneTypeID, lID))
-		return FALSE;
-
-	return TRUE;
-}
-

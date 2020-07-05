@@ -40,7 +40,7 @@ class CPhoneNumbersTable : public ::CTable<PHONE_NUMBERS, CPhoneNumbersTableAcce
 	// Constructor / Destructor
 	// ----------------
 public:
-	CPhoneNumbersTable(CDataSource* pDataSource, CSession* pSession);
+	CPhoneNumbersTable();
 	~CPhoneNumbersTable();
 
 	// Methods

@@ -30,6 +30,8 @@ BOOL CPhoneTypesDocument::OnNewDocument()
 		return FALSE;
 	}
 
+	this->SetTitle(_T("Phone Types"));
+	CDocTemplate::fileNewName;
 	RefreshData();
 
 	return TRUE;
@@ -153,7 +155,7 @@ BOOL CPhoneTypesDocument::EditPhoneType(PHONE_TYPES& recPhoneType)
 
 	CPhoneTypesUpdateObject oPhoneTypesUpdateObject(reinterpret_cast<DWORD_PTR>(pPhoneType));
 
-	OnUpdateAllViews(OperationsUpdate, &oPhoneTypesUpdateObject);
+	OnUpdateAllViews(Utilities::OperationsUpdate, &oPhoneTypesUpdateObject);
 
 	return TRUE;
 }
@@ -173,7 +175,7 @@ BOOL CPhoneTypesDocument::AddPhoneType(PHONE_TYPES& recPhoneType)
 
 	CPhoneTypesUpdateObject oPhoneTypesUpdateObject(reinterpret_cast<DWORD_PTR>(pPhoneType));
 
-	OnUpdateAllViews(OperationsCreate, &oPhoneTypesUpdateObject);
+	OnUpdateAllViews(Utilities::OperationsCreate, &oPhoneTypesUpdateObject);
 	return TRUE;
 }
 
@@ -197,7 +199,7 @@ BOOL CPhoneTypesDocument::DeletePhoneType(const PHONE_TYPES& recPhoneType)
 
 	CPhoneTypesUpdateObject oPhoneTypesUpdateObject(dwDeletedPhoneTypeAddress);
 
-	OnUpdateAllViews(OperationsDelete, &oPhoneTypesUpdateObject);
+	OnUpdateAllViews(Utilities::OperationsDelete, &oPhoneTypesUpdateObject);
 	return TRUE;
 }
 
@@ -209,7 +211,6 @@ void CPhoneTypesDocument::CleanRepository()
 
 void CPhoneTypesDocument::OnUpdateAllViews(LPARAM lHint, CObject* pHint)
 {
-	SetModifiedFlag();
 	UpdateAllViews(NULL, lHint, pHint);
 }
 

@@ -43,9 +43,7 @@ public:
 	/// <returns>BOOL: при успех - TRUE, при неуспех - FALSE</returns>
 	BOOL InsertPersonWithData(
 		PERSONS& recPerson,
-		CPhoneNumbersArray& oPersonPhoneNumbersArray, 
-		CPhoneTypesArray* pNewPhoneTypesArray = NULL,
-		CITIES* pNewCity= NULL
+		CPhoneNumbersArray& oPersonPhoneNumbersArray
 	);
 
 	/// <summary>Изтрива запис по Id от бд</summary>
@@ -58,7 +56,6 @@ public:
 	BOOL SelectAllPhoneNumbers(CPhoneNumbersArray& oPhoneNumbersArray);
 	BOOL SelectAllPhoneTypes(CPhoneTypesArray& oPhoneTypesArray);
 	BOOL SelectAllCities(CCitiesArray& oCitiesArray);
-	BOOL SelectCityWhereName(const TCHAR* pszCityName, CITIES& recCity);
 	BOOL InsertPhoneType(PHONE_TYPES* pPhoneType);
 	BOOL InsertCity(CITIES* pCity);
 	BOOL DeletePhoneNumberWhereID(const long lID);
@@ -66,14 +63,10 @@ public:
 		PERSONS& recPerson, 
 		CPhoneNumbersArray& oDeletedPhoneNumbersArray, 
 		CPhoneNumbersArray& oUpdatedPhoneNumbersArray,
-		CPhoneNumbersArray& oNewPhoneNumbersArray, 
-		CPhoneTypesArray* pNewPhoneTypesArray, 
-		CITIES* pNewCity
+		CPhoneNumbersArray& oNewPhoneNumbersArray
 	);
 
 private:
-	BOOL IsPhoneNumberWithEncodedPhoneTypeID(long lPhoneTypeID, CMap<long, long, long, long>& oPhoneTypesIDsMap);
-	long GetCorrectPhoneTypeID(long lPhoneTypeID, CMap<long, long, long, long>& oPhoneTypesIDsMap);
 	BOOL InsertPhoneTypes(CPhoneTypesArray& oPhoneTypesArray, CMap<long, long, long, long>& oNewPhoneTypesOldIndexesMap);
 
 	// Members

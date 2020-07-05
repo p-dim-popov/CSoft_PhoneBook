@@ -116,16 +116,19 @@ BOOL CPhoneBookApp::InitInstance()
 	//  serve as the connection between documents, frame windows and views
 
 	CMultiDocTemplate* pCitiesDocTemplate = new CMultiDocTemplate(
-		IDR_PhoneBookTYPE,
+		IDR_CitiesTYPE,
 		RUNTIME_CLASS(CCitiesDocument),
 		RUNTIME_CLASS(CChildFrame), // custom MDI child frame
 		RUNTIME_CLASS(CCitiesView));
 	if (!pCitiesDocTemplate)
 		return FALSE;
+	CString x;
+	pCitiesDocTemplate->GetDocString(x, pCitiesDocTemplate->fileNewName);
+	TRACE(x.GetString());
 	AddDocTemplate(pCitiesDocTemplate);
 
 	CMultiDocTemplate* pPhoneTypesDocTemplate = new CMultiDocTemplate(
-		IDR_PhoneBookTYPE,
+		IDR_PhoneTypesTYPE,
 		RUNTIME_CLASS(CPhoneTypesDocument),
 		RUNTIME_CLASS(CChildFrame), // custom MDI child frame
 		RUNTIME_CLASS(CPhoneTypesView));
@@ -134,7 +137,7 @@ BOOL CPhoneBookApp::InitInstance()
 	AddDocTemplate(pPhoneTypesDocTemplate);
 
 	CMultiDocTemplate* pPersonsDocTemplate = new CMultiDocTemplate(
-		IDR_PhoneBookTYPE,
+		IDR_PersonsTYPE,
 		RUNTIME_CLASS(CPersonsDocument),
 		RUNTIME_CLASS(CChildFrame), // custom MDI child frame
 		RUNTIME_CLASS(CPersonsView));
@@ -151,16 +154,15 @@ BOOL CPhoneBookApp::InitInstance()
 	}
 	m_pMainWnd = pMainFrame;
 
-
 	// Parse command line for standard shell commands, DDE, file open
 	CCommandLineInfo cmdInfo;
 	ParseCommandLine(cmdInfo);
-
-
+	
 	// Dispatch commands specified on the command line.  Will return FALSE if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
 	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
+
 	// The main window has been initialized, so show and update it
 	pMainFrame->ShowWindow(m_nCmdShow);
 	pMainFrame->UpdateWindow();

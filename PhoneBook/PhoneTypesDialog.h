@@ -21,7 +21,7 @@ class CPhoneTypesDialog : public CDialog
 	// Constructor / Destructor
 	// ----------------
 public:
-	CPhoneTypesDialog(PHONE_TYPES& recPhoneType, Operations eOperation);   // constructor
+	CPhoneTypesDialog(PHONE_TYPES& recPhoneType, Utilities::Operations eOperation);   // constructor
 	virtual ~CPhoneTypesDialog();
 
 	// Dialog Data
@@ -50,7 +50,7 @@ private:
 	// -------------
 private:
 	PHONE_TYPES& m_recPhoneType;
-	Operations m_eOperation;
+	Utilities::Operations m_eOperation;
 
 	CEdit m_edbType;
 

@@ -7,9 +7,10 @@
 // Constructor / Destructor
 // ----------------
 
-CPhoneTypesData::CPhoneTypesData() :
-	m_oPhoneTypesTable(CPhoneTypesTable(&m_oDataSource, &m_oSession))
+CPhoneTypesData::CPhoneTypesData()
 {
+	m_oPhoneTypesTable.SetDataSource(&m_oDataSource);
+	m_oPhoneTypesTable.SetSession(&m_oSession);
 }
 
 CPhoneTypesData::~CPhoneTypesData()

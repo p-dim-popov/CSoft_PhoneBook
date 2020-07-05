@@ -39,7 +39,7 @@ public:
 
 	CPhoneTypesArray& GetAllPhoneTypes();
 	CCitiesArray& GetAllCities();
-	CPhoneNumbersArray GetAllPhonesForPersonByID(long lID);
+	BOOL GetAllPhonesForPersonByID(long lID, CPhoneNumbersArray& oPhoneNumbers);
 
 	/// <summary>Достъп до запис от m_oPersonsArray</summary>
 	/// <param name="lID">Id на град, който се търси</param>
@@ -57,17 +57,13 @@ public:
 	/// <summary>Добавяне на единичен запис в бд</summary>
 	/// <param name="recPerson">Град</param>
 	/// <returns>bool: при успех - true, при неуспех - false</returns>
-	BOOL AddPerson(PERSONS& recPerson, CPhoneNumbersArray& oPhoneNumbersArray, CPhoneTypesArray* pPhoneTypesArray = NULL, CITIES* pCity = NULL);
-
-	void CombineNewAndUpdatedPhoneNumbers(const CPhoneNumbersArray& oNewPhoneNumbersArray, const CPhoneNumbersArray& oUpdatedPhoneNumbersArray, CPhoneNumbersArray& oPhoneNumbersArray);
+	BOOL AddPerson(PERSONS& recPerson, CPhoneNumbersArray& oPhoneNumbersArray);
 
 	BOOL EditPerson(
 		PERSONS& recPerson,
 		CPhoneNumbersArray& oDeletedPhoneNumbersArray,
 		CPhoneNumbersArray& oUpdatedPhoneNumbersArray,
-		CPhoneNumbersArray& oNewPhoneNumbersArray,
-		CPhoneTypesArray* pNewPhoneTypesArray = NULL,
-		CITIES* pNewCity = NULL
+		CPhoneNumbersArray& oNewPhoneNumbersArray
 	);
 
 	BOOL DeleteAllPhonesForPersonByID(const long lID, CPhoneNumbersArray& oPhoneNumbersToDelete);
@@ -198,14 +194,10 @@ private:
 	CPersonsData m_oPersonsData;
 
 	CPersonsArray m_oPersonsArray;
-	CPhoneNumbersArray m_oPhoneNumbersArray; //TODO: choose wheter to select from database or iterate to find in existing
 	CPhoneTypesArray m_oPhoneTypesArray;
 	CCitiesArray m_oCitiesArray;
 
 	CMap<long, long, long, long> m_oPersonsIndexesOfIds;
-	//CMap<long, long, long, long> m_oPhoneNumbersIndexesOfIds;
-	//CMap<long, long, long, long> m_oPhoneTypesIndexesOfIds;
-	//CMap<long, long, long, long> m_oCitiesIndexesOfIds;
 
 #ifdef _DEBUG
 	void AssertValid() const override;

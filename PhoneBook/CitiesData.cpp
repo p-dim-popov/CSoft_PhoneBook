@@ -7,9 +7,10 @@
 // Constructor / Destructor
 // ----------------
 
-CCitiesData::CCitiesData() :
-	m_oCitiesTable(CCitiesTable(&m_oDataSource, &m_oSession))
+CCitiesData::CCitiesData()
 {
+	m_oCitiesTable.SetDataSource(&m_oDataSource);
+	m_oCitiesTable.SetSession(&m_oSession);
 }
 
 CCitiesData::~CCitiesData()

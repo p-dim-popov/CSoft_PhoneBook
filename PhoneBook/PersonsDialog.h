@@ -22,7 +22,7 @@ class CPersonsDialog : public CDialog
 	// ----------------
 public:
 	CPersonsDialog(
-		Operations eOperation,
+		Utilities::Operations eOperation,
 		PERSONS& recPerson,
 		CPhoneNumbersArray& oPersonPhoneNumbersArray,
 		CITIES& recPersonCity,
@@ -52,9 +52,6 @@ private:
 	INT CollectAndValidateCityAndDisplayMessage(CString& strCityName, CString& strCityRegion);
 	void OnOK() override;
 	
-	afx_msg void OnBnClickedBtnPersonsAddNewCity();
-	afx_msg void OnBnClickedBtnPersonsAddNewType();
-	void RevertOnBnClickedBtnPersonsAddNewType();
 	void RemovePersonNumberAndRepairListCtrlData(PHONE_NUMBERS* pPhoneNumber);
 	void OnBnClickedBtnPersonsRemoveNumber();
 	afx_msg void OnBnClickedBtnPersonsEditNumber();
@@ -62,11 +59,7 @@ private:
 	afx_msg void OnBnClickedBtnPersonsAddPhone();
 
 	// Methods
-	// ----------------
-public:
-	BOOL AreNewPhoneTypesAdded();
-	BOOL IsNewCityAdded();
-	
+	// ----------------	
 private:
 	void RepairListCtrlIndexes(INT_PTR nIndex = 0);
 	
@@ -80,8 +73,6 @@ private:
 	INT ValidatePhoneType(const CString& strPhoneType, CString* strPhoneTypeValidationMessage);
 	INT ValidatePhoneNumber(const CString& strPhoneNumber, CString* strPhoneValidationMessage);
 
-	void CollectAndValidatePhoneTypeFromEditBox(CString& strPhoneType, INT& nPhoneTypeValidationResult);
-	void CollectAndValidatePhoneTypeFromComboBox(CString& strPhoneType, INT& nPhoneTypeValidationResult);
 	void CollectAndValidatePhoneTypeAndDisplayMessage(CString& strPhoneType, INT& nPhoneTypeValidationResult);
 	void CollectAndValidatePhoneNumberAndDisplayMessage(CString& strPhoneNumber, INT& nPhoneNumberValidationResult);
 
@@ -99,14 +90,8 @@ private:
 	CPhoneTypesArray& m_oPhoneTypesArray;
 	CCitiesArray& m_oCitiesArray;
 
-	CPhoneTypesArray* m_pNewPhoneTypes;
+	Utilities::Operations m_eOperation;
 
-	BOOL m_bAreNewPhoneTypesAdded;
-	BOOL m_bIsNewCityAdded;
-
-	Operations m_eOperation;
-
-#pragma region CompileTimeVisible
 	CEdit m_edbFirstName;
 	CEdit m_edbMiddleName;
 	CEdit m_edbLastName;
@@ -117,23 +102,12 @@ private:
 	CComboBox m_cmbCity;
 	CComboBox m_cmbPhoneType;
 
-	CButton m_btnAddNewCity;
-	CButton m_btnAddNewPhoneType;
 	CButton m_btnAddPhone;
 	CButton m_btnRemovePhone;
 	CButton m_btnEditPhone;
+	CButton m_btnOK;
 
 	CListCtrl m_lscPhoneNumbers;
-#pragma endregion
-
-#pragma region RuntimeSelectable
-	CEdit m_edbCityName;
-	CEdit m_edbCityRegion;
-	CEdit m_edbPhoneType;
-
-	CStatic m_sttCityName;
-	CStatic m_sttCityRegion;
-#pragma endregion 
 
 #pragma region ValidationStatics
 	CStatic m_sttPersonsFirstNameValidationInfo;
@@ -141,8 +115,7 @@ private:
 	CStatic m_sttPersonsLastNameValidationInfo;
 	CStatic m_sttPersonsUCNValidationInfo;
 	CStatic m_sttPersonsAddressValidationInfo;
-	CStatic m_sttPersonsCityNameValidationInfo;
-	CStatic m_sttPersonsCityRegionValidationInfo;
+	CStatic m_sttPersonsCityValidationInfo;
 	CStatic m_sttPersonsPhoneTypeValidationInfo;
 	CStatic m_sttPersonsPhoneNumberValidationInfo;
 #pragma endregion 

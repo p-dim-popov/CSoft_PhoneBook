@@ -38,6 +38,6 @@ class CPhoneTypesTable : public ::CTable<PHONE_TYPES, CPhoneTypesTableAccessor>
 	// Constructor / Destructor
 	// ----------------
 public:
-	CPhoneTypesTable(CDataSource* pDataSource, CSession* pSession);
+	CPhoneTypesTable();
 	~CPhoneTypesTable();
 };
